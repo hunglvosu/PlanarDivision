@@ -27,6 +27,9 @@
     <ClInclude Include="planargraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="planar_face_visitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

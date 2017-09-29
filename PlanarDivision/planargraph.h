@@ -41,7 +41,8 @@ bool vertex::operator==(const vertex &other) {
 
 struct planargraph {
 	vertex *vertices;	// the set of vertices
-	arc *arcs;			// the set of arcs
+	//std::vector<arc> arcs; // the set of arcs, that can change
+	arc *arcs;
 	int n = 0;
 	int m = 0;
 	std::map<std::pair<int, int>, int> arc_map;	// is a red back tree, it has running time O(log n), avoid using this as much as possible
@@ -51,7 +52,8 @@ struct planargraph {
 	arc create_arc(int sourceindex, int sinkindex);	// add an arc with a source and a sink
 	vertex null_vertex();
 	arc null_arc();
-
+	void reindex_arcs();
+	void reset_arc_marks();
 	void check_rotational_system();
 };
 
@@ -68,7 +70,9 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 		m += (*it).size();
 	}
 	arcs = new arc[m]{};
+	//arcs.reserve(m);
 	for (int i = 0; i < m; i++) {
+//		arcs.push_back(null_arc());
 		arcs[i] = null_arc();	// initialize null to evry arc
 	}
 	int u = 0;
@@ -81,11 +85,11 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 	for (std::vector<std::vector<int>>::iterator it = embedding.begin(); it != embedding.end(); ++it) {
 		std::vector<int> rotation_around_u = *it;
 		u_vertex = vertices[u];
-		//printf("%d:\t", u);
+//		printf("%d:\t", u);
 		//printf("deg:%d\t", rotation_around_u.size());
 		arc *prev_arc = &arcs[arc_index + rotation_around_u.size() - 1]; //  the last arc in the rotation system of u
 		for (std::vector<int>::iterator arc_it = rotation_around_u.begin(); arc_it != rotation_around_u.end(); ++arc_it) {
-			//printf("%d\t", *arc_it);
+//			printf("%d\t", *arc_it);
 			v_vertex = vertices[*arc_it];
 			//uv_arc = create_arc(u_vertex.index, v_vertex.index);
 			arcs[arc_index].source = &vertices[u_vertex.index]; 
@@ -115,7 +119,7 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 		//printf("\n");
 		u++;
 	}
-	check_rotational_system();
+	//check_rotational_system();
 }
 
 void planargraph::create_arc_indices() {
@@ -151,6 +155,16 @@ arc planargraph::null_arc() {
 	a.rev = nullptr;
 	a.mark = false;
 	return a;
+}
+void planargraph::reindex_arcs() {
+	for (int i = 0; i < m; i++) {
+		arcs[i].index = i;
+	}
+}
+void planargraph::reset_arc_marks() {
+	for (int i = 0; i < m; i++) {
+		arcs[i].mark = false;
+	}
 }
 
 void planargraph::check_rotational_system() {
