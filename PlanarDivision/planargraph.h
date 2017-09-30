@@ -3,6 +3,7 @@
 #include <vector>
 #include<map>
 #include<stdio.h>
+#include <unordered_map>
 
 typedef struct vertex vertex;
 typedef struct arc arc;
@@ -41,17 +42,16 @@ bool vertex::operator==(const vertex &other) {
 
 struct planargraph {
 	vertex *vertices;	// the set of vertices
-	//std::vector<arc> arcs; // the set of arcs, that can change
 	arc *arcs;
 	int n = 0;
 	int m = 0;
-	std::map<std::pair<int, int>, int> arc_map;	// is a red back tree, it has running time O(log n), avoid using this as much as possible
-
+	std::unordered_map<__int64, int> arc_map;
 	planargraph(int nv, std::vector<std::vector<int>> & embedding);
 	void create_arc_indices();
 	arc create_arc(int sourceindex, int sinkindex);	// add an arc with a source and a sink
 	vertex null_vertex();
 	arc null_arc();
+	__int64 arc_to_int64(vertex *soure, vertex *sink);
 	void reindex_arcs();
 	void reset_arc_marks();
 	void check_rotational_system();
@@ -69,31 +69,28 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 	for (std::vector<std::vector<int>>::iterator it = embedding.begin(); it != embedding.end(); ++it) {
 		m += (*it).size();
 	}
-	arcs = new arc[m]{};
-	//arcs.reserve(m);
+	arcs = new arc[6*n]{};
+	arc_map.reserve(6*n);
 	for (int i = 0; i < m; i++) {
-//		arcs.push_back(null_arc());
 		arcs[i] = null_arc();	// initialize null to evry arc
 	}
 	int u = 0;
-	vertex u_vertex;
-	vertex v_vertex;
+	vertex *u_vertex;
+	vertex *v_vertex;
 	int arc_index = 0;
-	arc uv_arc;
 	int uv_arc_index = -1;
 	int vu_arc_index = -1;
 	for (std::vector<std::vector<int>>::iterator it = embedding.begin(); it != embedding.end(); ++it) {
 		std::vector<int> rotation_around_u = *it;
-		u_vertex = vertices[u];
+		u_vertex = &vertices[u];
 //		printf("%d:\t", u);
 		//printf("deg:%d\t", rotation_around_u.size());
 		arc *prev_arc = &arcs[arc_index + rotation_around_u.size() - 1]; //  the last arc in the rotation system of u
 		for (std::vector<int>::iterator arc_it = rotation_around_u.begin(); arc_it != rotation_around_u.end(); ++arc_it) {
 //			printf("%d\t", *arc_it);
-			v_vertex = vertices[*arc_it];
-			//uv_arc = create_arc(u_vertex.index, v_vertex.index);
-			arcs[arc_index].source = &vertices[u_vertex.index]; 
-			arcs[arc_index].sink = &vertices[v_vertex.index];
+			v_vertex = &vertices[*arc_it];
+			arcs[arc_index].source = u_vertex;
+			arcs[arc_index].sink = v_vertex;
 			arcs[arc_index].id = arc_index;
 			arcs[arc_index].index = arc_index;
 			// update prev arc of uv in the rotation around u
@@ -106,12 +103,10 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 			prev_arc = &arcs[uv_arc_index];
 			arc_index++;
 			// update the rev pointers
-			std::pair<int, int> uv_pair(u_vertex.index, v_vertex.index);
-			std::pair<int, int> vu_pair(v_vertex.index, u_vertex.index);
-			arc_map[uv_pair] = uv_arc_index;	// put index of u-to-v arc to the map
-			if (v_vertex.index < u_vertex.index) {	
+			arc_map.insert(std::unordered_map<__int64, int>::value_type(arc_to_int64(u_vertex, v_vertex), uv_arc_index)); // put u->v arc to the map
+			if (v_vertex->index < u_vertex->index) {	
 				// update the reverse pointer of u->v and v->u
-				vu_arc_index = arc_map[vu_pair];
+				vu_arc_index = arc_map.find(arc_to_int64(v_vertex, u_vertex))->second;	// get the index of v->u arc
 				arcs[uv_arc_index].rev = &arcs[vu_arc_index];
 				arcs[vu_arc_index].rev = &arcs[uv_arc_index];
 			}
@@ -126,6 +121,10 @@ void planargraph::create_arc_indices() {
 	for (int i = 0; i <m; i++) {
 		arcs[i].index = i;
 	}
+}
+
+__int64 planargraph::arc_to_int64(vertex *source, vertex *sink) {
+	return ((__int64)source->index << 32) + (__int64)sink->index;
 }
 
 arc planargraph::create_arc(int sourceindex, int sinkindex) {
