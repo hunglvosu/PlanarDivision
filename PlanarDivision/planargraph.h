@@ -19,12 +19,18 @@ struct arc {
 	int id;
 	int index;
 	bool mark;
+	int version;
 
 	bool operator==(const arc &other);
+	bool operator!=(const arc &other);
 };
 
 bool arc::operator==(const arc &other) {
 	return id == other.id;
+}
+
+bool arc::operator!=(const arc &other) {
+	return id != other.id;
 }
 
 struct vertex {
@@ -34,17 +40,25 @@ struct vertex {
 	std::vector<arc*> arclist;
 
 	bool operator==(const vertex &other);
+	bool operator!=(const vertex &other);
 };
 
 bool vertex::operator==(const vertex &other) {
 	return id == other.id;
 }
 
+bool vertex::operator!=(const vertex &other) {
+	return id != other.id;
+}
 struct planargraph {
 	vertex *vertices;	// the set of vertices
 	arc *arcs;
 	int n = 0;
 	int m = 0;
+	int max_num_arcs;
+	int current_version = 0;	// useful when modifying the graph by adding arcs, each modification resulting a version
+	int num_version = 0;		// the current number of versions
+
 	std::unordered_map<__int64, int> arc_map;
 	planargraph(int nv, std::vector<std::vector<int>> & embedding);
 	void create_arc_indices();
@@ -55,6 +69,7 @@ struct planargraph {
 	void reindex_arcs();
 	void reset_arc_marks();
 	void check_rotational_system();
+	static void print_arc(arc *a);
 };
 
 planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
@@ -69,7 +84,8 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 	for (std::vector<std::vector<int>>::iterator it = embedding.begin(); it != embedding.end(); ++it) {
 		m += (*it).size();
 	}
-	arcs = new arc[6*n]{};
+	arcs = new arc[6*n];
+	max_num_arcs = 6 * n;
 	arc_map.reserve(6*n);
 	for (int i = 0; i < m; i++) {
 		arcs[i] = null_arc();	// initialize null to evry arc
@@ -135,6 +151,7 @@ arc planargraph::create_arc(int sourceindex, int sinkindex) {
 	a.prevarc = nullptr;
 	a.rev = nullptr;
 	a.mark = false;
+	a.version = 0;
 	return a;
 }
 
@@ -153,6 +170,7 @@ arc planargraph::null_arc() {
 	a.prevarc = nullptr;
 	a.rev = nullptr;
 	a.mark = false;
+	a.version = 0;
 	return a;
 }
 void planargraph::reindex_arcs() {
@@ -164,6 +182,10 @@ void planargraph::reset_arc_marks() {
 	for (int i = 0; i < m; i++) {
 		arcs[i].mark = false;
 	}
+}
+
+void planargraph::print_arc(arc *a) {
+	printf("%d->%d\n", a->source->id, a->sink->id);
 }
 
 void planargraph::check_rotational_system() {

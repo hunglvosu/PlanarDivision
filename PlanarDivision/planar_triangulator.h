@@ -7,22 +7,21 @@
 struct  triangulator : face_traversal_visitor
 {
 
-	std::vector<vertex*> vertices_on_face;
-	int *visited_times;	// count how many time we have visited a vertex on the same face
 	planargraph &g;
-	int num_arcs_stor_in_g = 0;
+	int num_arcs_store_in_g = 0;
+	arc *prev_arc0 = nullptr;
+	arc *prev_arc1 = nullptr;
+
 
 	triangulator(planargraph &arg_g) : g(arg_g) {
-		visited_times = new int[g.n];
-		for (int i = 0; i < g.n; i++) visited_times[i] = 0;
-		num_arcs_stor_in_g = g.m;
+		num_arcs_store_in_g = g.m;
 	};
 
 	void begin_traversal() {
-		printf("Begin face traversal\n");
+		printf("Triangulating the input graph\n");
+		printf("# arcs: %d\n", g.m);
 	}
 	void begin_face() {
-		vertices_on_face.reserve(16);
 		//printf("Traverse a new face\n");
 	}
 	void next_vertex(vertex* v) {
@@ -33,35 +32,70 @@ struct  triangulator : face_traversal_visitor
 	void next_arc(arc* uv) {
 		vertex *u = uv->source;
 		vertex *v = uv->sink;
-		printf("visit arc %d->%d\n", u->index, v->index);
-		visited_times[u->index]++;
-		if (visited_times[u->index] > 1) {
-			printf("%d is visited at least twice\n", u->index);
-			vertex *w = vertices_on_face.back();
-			printf("add two arcs: %d->%d and %d->%d\n", v->index, w->index, v->index, w->index);
-			g.arcs[num_arcs_stor_in_g] = g.create_arc(v->index, w->index);
-			g.arcs[num_arcs_stor_in_g + 1] = g.create_arc(w->index, v->index);
-			num_arcs_stor_in_g += 2;
+		if (prev_arc0 != nullptr && prev_arc1 != nullptr) {
+			// recall prev0 = prev of prev1
+			// prev1 = prev of uv
+			if (*(uv->sink) != *(prev_arc0->source)) {
+				// the current face is not triangular
+				vertex *p = prev_arc0->sink;
+				vertex *q = prev_arc0->source;	
+				// add u->q  and q-> u arcs
+				g.arcs[num_arcs_store_in_g] = g.create_arc(u->index, q->index);
+				g.arcs[num_arcs_store_in_g + 1] = g.create_arc(q->index, u->index);
+				arc *uq = &g.arcs[num_arcs_store_in_g];
+				arc *qu = &g.arcs[num_arcs_store_in_g + 1];
+				uq->index = num_arcs_store_in_g;
+				uq->id = uq->index;
+				uq->version = g.current_version + 1;	// update the arc version
+				qu->index = num_arcs_store_in_g + 1;
+				qu->id = qu->index;
+				uq->rev = qu;
+				qu->rev = uq;
+				qu->version = g.current_version + 1;	// update the arc version
+				// update next and prev of prev 0
+				arc *next_of_prev0 = prev_arc0->nextarc;
+				prev_arc0->nextarc = qu;
+				qu->nextarc = next_of_prev0;
+				next_of_prev0->prevarc = qu;
+				qu->prevarc = prev_arc0;
+				// update next and prev of uv
+				uv->nextarc = uq;
+				uq->prevarc = uv;
+				uq->nextarc = prev_arc1->rev;
+				prev_arc1->rev->prevarc = uq;
+				prev_arc1 = qu;
+				// update the neighbors of u and q
+				u->arclist.push_back(uq);
+				q->arclist.push_back(qu);
+				num_arcs_store_in_g += 2;
+			}
 		}
-		vertices_on_face.push_back(u);
-
-		//printf("Process arc %d->%d\n", uv.source->name, uv.sink->name);
+		prev_arc0 = prev_arc1;
+		prev_arc1 = uv;
+	
 	}
 
 	void end_face() {
-		for (int i = 0; i < vertices_on_face.size(); i++) {
-			visited_times[vertices_on_face[i]->index] = 0;
-		}
-		vertices_on_face.clear();
-		//printf("End traversing a face\n");
+		prev_arc0 = nullptr;
+		prev_arc1 = nullptr;
 	}
 	void end_traversal() {
-		printf("End face traversal\n");
+		printf("Triangulation finished\n");
+		printf("# of arcs: %d\n", num_arcs_store_in_g);
+		g.m = num_arcs_store_in_g;
+		g.num_version++;
+		g.current_version++;		// update the graph version	
+		
+		//g.m = num_arcs_store_in_g;
+		// every face is guranteed to have face length of 3
+		// but there could be parallel edges 
+		// need to delete parallel edges
+
 	}
 
 };
 
-void planar_triangulator(planargraph &g){
+void planar_triangulate(planargraph &g){
 	triangulator trg(g);
 	planar_face_traversal(g, trg);
 }

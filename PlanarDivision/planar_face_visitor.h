@@ -1,5 +1,6 @@
 #pragma once
 #include "planargraph.h"
+#include <memory>
 struct face_traversal_visitor {
 
 	virtual void begin_traversal() {};
@@ -30,6 +31,7 @@ void planar_face_traversal(const planargraph &g, face_traversal_visitor &visitor
 			face_count++;
 			//printf("face #%d\n", face_count);
 		}
+		// traverse the face incident to current_arc_index
 		while (!arc_marker[current_arc_index]) {
 			visitor.next_arc(current_arc);
 			source = current_arc->source;
@@ -37,8 +39,10 @@ void planar_face_traversal(const planargraph &g, face_traversal_visitor &visitor
 			visitor.next_vertex(sink);
 			// update current arc
 			arc_marker[current_arc_index] = true;
-			current_arc = current_arc->rev->prevarc;
-			current_arc_index = current_arc->index;
+			if(current_arc->rev->prevarc->version <= g.current_version){	// if the arc to be visited is not a new arc, i.e, arc added during traversal
+				current_arc = current_arc->rev->prevarc;
+				current_arc_index = current_arc->index;
+			}
 		}
 		if (is_new_face) {
 			visitor.end_face();

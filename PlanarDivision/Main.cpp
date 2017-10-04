@@ -14,6 +14,7 @@ using namespace std;
 vector<vector<int>> create_sample_3x3_grid_embedding();
 vector<vector<int>> create_sample_deg_1_embedding();
 vector<vector<int>> create_sample_grid_nxn_embedding(int n);
+vector<vector<int>> create_sample_star_1xn_embedding(int n);
 void benchmarking();
 struct sample_face_visitor;
 
@@ -44,10 +45,17 @@ struct sample_face_visitor : face_traversal_visitor {
 int main() {
 	
 //	vector<vector<int>> embedding = create_sample_3x3_grid_embedding();
-//	vector<vector<int>> embedding = create_sample_deg_1_embedding();
-//	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
 //	planargraph g(9, embedding);
-//	planar_triangulator(g);
+	
+//	vector<vector<int>> embedding = create_sample_deg_1_embedding();
+//	planargraph g(4, embedding);
+
+	vector<vector<int>> embedding = create_sample_star_1xn_embedding(4);
+	planargraph g(4, embedding);
+
+//	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
+//	planar_triangulate(g);
+//	g.check_rotational_system();
 //	sample_face_visitor face_visitor;
 //	planar_face_traversal(g, face_visitor);
 	benchmarking();
@@ -85,6 +93,13 @@ void benchmarking() {
 	time(&end);
 	difference = difftime(end, begin);
 	printf("time taken to read arc_map %.2lf seconds.\n", difference);
+
+
+	time(&begin);
+	planar_triangulate(g);
+	time(&end);
+	difference = difftime(end, begin);
+	printf("time taken to triangulate 1 mil g %.2lf seconds.\n", difference);
 
 }
 
@@ -168,4 +183,20 @@ vector<vector<int>> create_sample_grid_nxn_embedding(int n) {
 		}
 	}
 	return embedding_storage;
+}
+
+vector<vector<int>> create_sample_star_1xn_embedding(int n) {
+	vector<vector<int>> embedding_storage;
+	for (int i = 0; i < n - 1; i++) {
+		vector<int> rot;
+		rot.push_back(n - 1);
+		embedding_storage.push_back(rot);
+	}
+	vector<int> rot_n_1;
+	for (int i = 0; i < n - 1; i++) {
+		rot_n_1.push_back(i);
+	}
+	embedding_storage.push_back(rot_n_1);
+	return embedding_storage;
+
 }
