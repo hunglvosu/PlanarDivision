@@ -50,9 +50,10 @@ int main() {
 //	vector<vector<int>> embedding = create_sample_deg_1_embedding();
 //	planargraph g(4, embedding);
 
-	vector<vector<int>> embedding = create_sample_star_1xn_embedding(4);
-	planargraph g(4, embedding);
-
+	vector<vector<int>> embedding = create_sample_star_1xn_embedding(5);
+	planargraph g(5, embedding);
+	planar_triangulate(g);
+//	g.check_rotational_system();
 //	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
 //	planar_triangulate(g);
 //	g.check_rotational_system();

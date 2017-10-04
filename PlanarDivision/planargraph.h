@@ -7,6 +7,7 @@
 
 typedef struct vertex vertex;
 typedef struct arc arc;
+typedef std::unordered_map<__int64, int> arc_map_type;
 //struct planargraph;
 
 

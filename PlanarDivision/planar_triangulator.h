@@ -18,8 +18,8 @@ struct  triangulator : face_traversal_visitor
 	};
 
 	void begin_traversal() {
-		printf("Triangulating the input graph\n");
-		printf("# arcs: %d\n", g.m);
+		//printf("Triangulating the input graph\n");
+		//printf("# arcs: %d\n", g.m);
 	}
 	void begin_face() {
 		//printf("Traverse a new face\n");
@@ -80,17 +80,50 @@ struct  triangulator : face_traversal_visitor
 		prev_arc1 = nullptr;
 	}
 	void end_traversal() {
-		printf("Triangulation finished\n");
-		printf("# of arcs: %d\n", num_arcs_store_in_g);
-		g.m = num_arcs_store_in_g;
-		g.num_version++;
-		g.current_version++;		// update the graph version	
-		
-		//g.m = num_arcs_store_in_g;
+		//printf("Triangulation finished\n");
+		//printf("# of arcs: %d\n", num_arcs_store_in_g);
 		// every face is guranteed to have face length of 3
 		// but there could be parallel edges 
-		// need to delete parallel edges
+		// need to "flip" parallel added edges
+		arc *uv, *vu, *uy, *yv, *vx, *xu;
+		vertex *x, *y;
+		for (int i = g.m; i < num_arcs_store_in_g - 1; i++) {
+			if (g.arc_map.find(g.arc_to_int64(g.arcs[i].source, g.arcs[i].sink))  != g.arc_map.end()) {
+				uv = &g.arcs[i];
+				vu = uv->rev;
+				vx = uv->rev->prevarc;
+				xu = vx->rev->prevarc;
+				uy = vu->rev->prevarc;
+				yv = uy->rev->prevarc;
+				x = vx->sink;
+				y = uy->sink;
+				// remove uv and vu
+				xu->rev->prevarc = uy;	// ux->prevarc = uy
+				uy->nextarc = xu->rev; // uy->nextarc = ux
+				vx->nextarc = yv->rev;	// vx->nextarc = vy
+				yv->rev->prevarc = vx;	// vy->prevarc = vx;
+				// change uv to xy
+				uv->source = x;
+				uv->sink = y;
+				vu->source = y;
+				vu->sink = x;
+				// insert xy and yx to the rotational system of x and y
+				// now uv is xy and vu is yx
+				yv->nextarc = vu;	
+				vu->prevarc = yv;
+				vu->nextarc = uy->rev;
+				uy->rev->prevarc = vu;
 
+				xu->nextarc = uv;
+				uv->prevarc = xu;
+				uv->nextarc = vx->rev;
+				vx->rev->prevarc = uv;
+			}
+			g.arc_map.insert(arc_map_type::value_type(g.arc_to_int64(g.arcs[i].source, g.arcs[i].sink), i));
+		}
+		g.m = num_arcs_store_in_g;
+		g.num_version++;
+		g.current_version++;		// update the graph version			
 	}
 
 };
