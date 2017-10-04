@@ -36,6 +36,9 @@
     <ClInclude Include="planar_triangulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bfs_visitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
