@@ -60,6 +60,10 @@ struct planargraph {
 	int current_version = 0;	// useful when modifying the graph by adding arcs, each modification resulting a version
 	int num_version = 0;		// the current number of versions
 
+	static int const white = 0;	// color for graph traversal
+	static int const gray = 1;
+	static int const black = 2;
+
 	std::unordered_map<__int64, int> arc_map;
 	planargraph(int nv, std::vector<std::vector<int>> & embedding);
 	void create_arc_indices();

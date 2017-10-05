@@ -147,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bfs_visitor.h" />
+    <ClInclude Include="dfs_visitor.h" />
     <ClInclude Include="planargraph.h" />
     <ClInclude Include="planar_face_visitor.h" />
     <ClInclude Include="planar_triangulator.h" />
