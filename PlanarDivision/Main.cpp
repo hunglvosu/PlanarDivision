@@ -24,55 +24,55 @@ struct sample_dfs_visitor;
 
 struct sample_dfs_visitor : dfs_visitor {
 	void discover_vertex(vertex *u) {
-		printf("Encounter %d for the first time\n", u->id);
+		//printf("Encounter %d for the first time\n", u->id);
 	}
 	
 	void examine_arc(arc *uv) {
-		printf("Visit arc %d->%d\n", uv->source->id, uv->sink->id);
+		//printf("Visit arc %d->%d\n", uv->source->id, uv->sink->id);
 	}
 	
 	void tree_arc(arc *uv) {
-		printf("Tree arc %d->%d\n", uv->source->id, uv->sink->id);
+		//printf("Tree arc %d->%d\n", uv->source->id, uv->sink->id);
 	}
 	
 	void back_arc(arc *uv) {
-		printf("Back arc %d->%d\n", uv->source->id, uv->sink->id);
+		//printf("Back arc %d->%d\n", uv->source->id, uv->sink->id);
 	}
 
 	void forward_or_cross_arc(arc *uv) {
-		printf("Forward or cross arc %d->%d\n", uv->source->id, uv->sink->id);
+		//printf("Forward or cross arc %d->%d\n", uv->source->id, uv->sink->id);
 	}
 	
 	void finish_vertex(vertex *u) {
-		printf("All vertices reachable from u are visited\n", u->id);
+		//printf("All vertices reachable from %d are visited\n", u->id);
 	}
 	
 };
 struct sample_bfs_visitor : bfs_visitor {
 	void discover_vertex(vertex *u) {
-		printf("Put %d to the queue\n", u->id);
+		//printf("Put %d to the queue\n", u->id);
 	}
 
 	void examine_vertex(vertex *u) {
-		printf("Pop %d from the queue\n", u->id);
+		//printf("Pop %d from the queue\n", u->id);
 	}
 	void tree_arc(arc *uv) {
-		printf("Tree arc %d->%d\n", uv->source->id, uv->sink->id);
+		//printf("Tree arc %d->%d\n", uv->source->id, uv->sink->id);
 	}
 
 	void non_tree_arc(arc *uv) {
-		printf("Non tree arc %d->%d when examining neighbors of %d\n", uv->source->id, uv->sink->id, uv->source->id);
+		//printf("Non tree arc %d->%d when examining neighbors of %d\n", uv->source->id, uv->sink->id, uv->source->id);
 	}
 
 	void gray_sink(arc *uv) {
-		printf("Neighbor %d of %d is not yet visited and in queue\n", uv->source->id, uv->sink->id);
+		//printf("Neighbor %d of %d is not yet visited and in queue\n", uv->source->id, uv->sink->id);
 	}
 
 	void black_sink(arc *uv) {
-		printf("Neighbor %d of %d is visited\n", uv->source->id, uv->sink->id);
+		//printf("Neighbor %d of %d is visited\n", uv->source->id, uv->sink->id);
 	}
 	void finish_vertex(vertex *u) {
-		printf("All neighbor of %d is put in queue or visited\n", u->id);
+		//printf("All neighbor of %d is put in queue or visited\n", u->id);
 	}
 
 };
@@ -111,15 +111,17 @@ int main() {
 //	vector<vector<int>> embedding = create_sample_star_1xn_embedding(5);
 //	planargraph g(5, embedding);
 	//planar_triangulate(g);
-	sample_bfs_visitor vis;
-	bfs(&g.vertices[0], g, vis);
+//	sample_bfs_visitor vis;
+//	bfs(&g.vertices[0], g, vis);
+	sample_dfs_visitor vis;
+	dfs(&g.vertices[0], g, vis);
 //	g.check_rotational_system();
 //	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
 //	planar_triangulate(g);
 //	g.check_rotational_system();
 //	sample_face_visitor face_visitor;
 //	planar_face_traversal(g, face_visitor);
-//	benchmarking();
+	benchmarking();
 	getchar();
 	return 0;
 }
@@ -161,6 +163,20 @@ void benchmarking() {
 	time(&end);
 	difference = difftime(end, begin);
 	printf("time taken to triangulate 1 mil g %.2lf seconds.\n", difference);
+	
+	time(&begin);
+	sample_bfs_visitor bfs_vis;
+	bfs(&g.vertices[0], g, bfs_vis);
+	time(&end);
+	difference = difftime(end, begin);
+	printf("time taken to bfs 1 mil g %.2lf seconds.\n", difference);
+
+	time(&begin);
+	sample_dfs_visitor dfs_vis;
+	dfs(&g.vertices[0], g, dfs_vis);
+	time(&end);
+	difference = difftime(end, begin);
+	printf("time taken to dfs 1 mil g %.2lf seconds.\n", difference);
 
 }
 
