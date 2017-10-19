@@ -42,6 +42,9 @@
     <ClInclude Include="dfs_visitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="reversible_list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

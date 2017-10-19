@@ -5,6 +5,7 @@
 #include "bfs_visitor.h"
 #include "dfs_visitor.h"
 #include "stdafx.h"
+#include "reversible_list.h"
 #include <vector>
 #include <ctime> // time_t
 #include <unordered_map>
@@ -121,7 +122,7 @@ int main() {
 //	g.check_rotational_system();
 //	sample_face_visitor face_visitor;
 //	planar_face_traversal(g, face_visitor);
-	benchmarking();
+//	benchmarking();
 	getchar();
 	return 0;
 }
