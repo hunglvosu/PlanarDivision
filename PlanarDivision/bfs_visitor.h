@@ -16,7 +16,7 @@ struct bfs_visitor {
 	virtual void finish_vertex(vertex *u) {};
 };
 
-void bfs(vertex *source, planargraph &g, bfs_visitor &vis) {
+void bfs(vertex *source, graph &g, bfs_visitor &vis) {
 	int *color = new int[g.n];	
 	//int white = 0, gray = 1, black = 2;
 	// 0 = while, 1 = gray, 2 = black

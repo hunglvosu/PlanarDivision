@@ -51,18 +51,30 @@ bool vertex::operator==(const vertex &other) {
 bool vertex::operator!=(const vertex &other) {
 	return id != other.id;
 }
-struct planargraph {
+
+struct graph {
 	vertex *vertices;	// the set of vertices
 	arc *arcs;
 	int n = 0;
 	int m = 0;
-	int max_num_arcs;
 	int current_version = 0;	// useful when modifying the graph by adding arcs, each modification resulting a version
 	int num_version = 0;		// the current number of versions
 
 	static int const white = 0;	// color for graph traversal
 	static int const gray = 1;
 	static int const black = 2;
+
+	static void print_arc(arc *a);
+};
+
+struct planargraph : graph {
+	//vertex *vertices;	// the set of vertices
+	//arc *arcs;
+	//int n = 0;
+	//int m = 0;
+	int max_num_arcs;
+	//int current_version = 0;	// useful when modifying the graph by adding arcs, each modification resulting a version
+	//int num_version = 0;		// the current number of versions
 
 	std::unordered_map<__int64, int> arc_map;
 	planargraph(int nv, std::vector<std::vector<int>> & embedding);
@@ -74,7 +86,7 @@ struct planargraph {
 	void reindex_arcs();
 	void reset_arc_marks();
 	void check_rotational_system();
-	static void print_arc(arc *a);
+
 };
 
 planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
@@ -189,7 +201,7 @@ void planargraph::reset_arc_marks() {
 	}
 }
 
-void planargraph::print_arc(arc *a) {
+void graph::print_arc(arc *a) {
 	printf("%d->%d\n", a->source->id, a->sink->id);
 }
 

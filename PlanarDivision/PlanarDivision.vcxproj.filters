@@ -45,6 +45,12 @@
     <ClInclude Include="reversible_list.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bfs_tree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dual_tree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

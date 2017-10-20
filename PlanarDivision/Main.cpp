@@ -4,7 +4,9 @@
 #include "planar_triangulator.h"
 #include "bfs_visitor.h"
 #include "dfs_visitor.h"
+#include "bfs_tree.h"
 #include "stdafx.h"
+#include "dual_tree.h"
 #include "reversible_list.h"
 #include <vector>
 #include <ctime> // time_t
@@ -105,7 +107,10 @@ int main() {
 	
 	vector<vector<int>> embedding = create_sample_3x3_grid_embedding();
 	planargraph g(9, embedding);
-	
+	bfs_tree tree(g, &g.vertices[0]);
+	bfs(&g.vertices[0], g, tree);
+	tree.print();
+
 //	vector<vector<int>> embedding = create_sample_deg_1_embedding();
 //	planargraph g(4, embedding);
 
@@ -114,15 +119,15 @@ int main() {
 	//planar_triangulate(g);
 //	sample_bfs_visitor vis;
 //	bfs(&g.vertices[0], g, vis);
-	sample_dfs_visitor vis;
-	dfs(&g.vertices[0], g, vis);
+//	sample_dfs_visitor vis;
+//	dfs(&g.vertices[0], g, vis);
 //	g.check_rotational_system();
 //	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
 //	planar_triangulate(g);
 //	g.check_rotational_system();
 //	sample_face_visitor face_visitor;
 //	planar_face_traversal(g, face_visitor);
-//	benchmarking();
+	benchmarking();
 	getchar();
 	return 0;
 }

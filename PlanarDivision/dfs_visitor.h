@@ -56,7 +56,7 @@ typedef std::vector<arc*>::iterator arc_iterator_type;
 typedef std::pair<arc_iterator_type, arc_iterator_type> iterator_pair_type;
 typedef std::pair<vertex *, iterator_pair_type> vertex_info;
 
-void dfs(vertex *source, planargraph &g, dfs_visitor &vis) {
+void dfs(vertex *source, graph &g, dfs_visitor &vis) {
 	int *color = new int[g.n];
 	for (int i = 0; i < g.n; i++) {
 		color[i] = g.white;
