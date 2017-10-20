@@ -12,21 +12,35 @@ struct  dual_tree : graph
 {
 	int *dual_vertex_index_to_arc_index;	// one arc is sufficient to indentify a face
 	int *arc_index_to_dual_vertex_index;
-	planargraph g;
-	dual_tree( planargraph const &arg_g, int arg_n) : g(arg_g) {
-		n = arg_n;
+	bfs_tree primal_tree;
+	dual_tree( bfs_tree const &arg_bfs_tree) : primal_tree(arg_bfs_tree) {
+		n = 2*primal_tree.g.n - 4;
 		vertices = new vertex[n];
 		for (int i = 0; i < n; i++) {
 			vertices[i].name = i;
 			vertices[i].index = i;
 			vertices[i].id = i;
 		}
-		arcs = new arc[n-1];
+		m = 2 * (n - 1);
+		arcs = new arc[m];
 		dual_vertex_index_to_arc_index = new int[n];
-		arc_index_to_dual_vertex_index = new int[g.m];
+		arc_index_to_dual_vertex_index = new int[primal_tree.g.m];
 	}
 
+	void print_dual_faces();
 };
+
+void dual_tree::print_dual_faces() {
+	for (int i = 0; i < n; i++) {
+		std::cout << "Face #" << i << std::endl;
+		arc *uv = &primal_tree.g.arcs[dual_vertex_index_to_arc_index[i]];
+		print_arc(uv);
+		arc *current;
+		for (current = uv->rev->prevarc; current != uv; current = current->rev->prevarc) {
+			print_arc(current);
+		}
+	}
+}
 
 struct dual_tree_builder : face_traversal_visitor {
 	dual_tree dtree;
@@ -54,7 +68,35 @@ struct dual_tree_builder : face_traversal_visitor {
 		//printf("End traversing a face\n");
 	}
 	void end_traversal() {
-		printf("End face traversal\n");
+		printf("building the dual tree\n");
+		int m = dtree.primal_tree.g.m;
+		arc *arcs = dtree.primal_tree.g.arcs;
+		bool *primal_tree_arc_marker = dtree.primal_tree.tree_arc_marker;
+		bool *arc_marker = new bool[m];
+		int dual_u_index, dual_v_index;
+		int current_arc_index = -1;
+		int uv_arc_index = -1, vu_arc_index = -1;
+		for (int i = 0; i < m; i++) arc_marker[i] = false;
+		for (int i = 0; i < m; i++) {
+			if ((!primal_tree_arc_marker[arcs[i].index]) && (!primal_tree_arc_marker[arcs[i].rev->index]) && (arc_marker[i])) {
+				
+				dual_u_index = dtree.arc_index_to_dual_vertex_index[arcs[i].index];
+				dual_v_index = dtree.arc_index_to_dual_vertex_index[arcs[i].rev->index];
+				// add u->v arc and v->u arc to the dual tree
+				uv_arc_index = current_arc_index + 1;
+				vu_arc_index = current_arc_index + 2;
+				dtree.update_arc(uv_arc_index, dual_u_index, dual_v_index);
+				dtree.update_arc(vu_arc_index, dual_v_index, dual_u_index);
+				dtree.arcs[uv_arc_index].rev = &dtree.arcs[vu_arc_index];
+				dtree.arcs[vu_arc_index].rev = &dtree.arcs[uv_arc_index];
+				dtree.vertices[dual_u_index].arclist.push_back(&dtree.arcs[uv_arc_index]);
+				dtree.vertices[dual_v_index].arclist.push_back(&dtree.arcs[vu_arc_index]);
+				current_arc_index += 2;
+			}
+			arc_marker[i] = true;
+			arc_marker[arcs[i].rev->index] = true;
+		}
+		delete arc_marker;
 	}
 
 };

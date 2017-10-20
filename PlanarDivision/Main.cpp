@@ -107,10 +107,16 @@ int main() {
 	
 	vector<vector<int>> embedding = create_sample_3x3_grid_embedding();
 	planargraph g(9, embedding);
-	bfs_tree tree(g, &g.vertices[0]);
-	bfs(&g.vertices[0], g, tree);
-	tree.print();
-
+	planar_triangulate(g);
+	g.print();
+	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
+	bfs(&g.vertices[0], g, primal_bfs_tree);
+	primal_bfs_tree.print();
+	dual_tree dual_bfs_tree(primal_bfs_tree);
+	dual_tree_builder tree_buider(dual_bfs_tree);
+	planar_face_traversal(g, tree_buider);
+	dual_bfs_tree.print();
+	dual_bfs_tree.print_dual_faces();
 //	vector<vector<int>> embedding = create_sample_deg_1_embedding();
 //	planargraph g(4, embedding);
 
@@ -127,7 +133,7 @@ int main() {
 //	g.check_rotational_system();
 //	sample_face_visitor face_visitor;
 //	planar_face_traversal(g, face_visitor);
-	benchmarking();
+//	benchmarking();
 	getchar();
 	return 0;
 }
@@ -183,6 +189,21 @@ void benchmarking() {
 	time(&end);
 	difference = difftime(end, begin);
 	printf("time taken to dfs 1 mil g %.2lf seconds.\n", difference);
+
+	time(&begin);
+	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
+	bfs(&g.vertices[0], g, primal_bfs_tree);
+	time(&end);
+	difference = difftime(end, begin);
+	printf("time taken to build a primal bfs tree of mil g %.2lf seconds.\n", difference);
+
+	time(&begin);
+	dual_tree dual_bfs_tree(primal_bfs_tree);
+	dual_tree_builder tree_buider(dual_bfs_tree);
+	planar_face_traversal(g, tree_buider);
+	time(&end);
+	difference = difftime(end, begin);
+	printf("time taken to build a dual bfs tree of mil g %.2lf seconds.\n", difference);
 
 }
 

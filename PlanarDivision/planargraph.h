@@ -65,26 +65,21 @@ struct graph {
 	static int const black = 2;
 
 	static void print_arc(arc *a);
-};
-
-struct planargraph : graph {
-	//vertex *vertices;	// the set of vertices
-	//arc *arcs;
-	//int n = 0;
-	//int m = 0;
-	int max_num_arcs;
-	//int current_version = 0;	// useful when modifying the graph by adding arcs, each modification resulting a version
-	//int num_version = 0;		// the current number of versions
-
-	std::unordered_map<__int64, int> arc_map;
-	planargraph(int nv, std::vector<std::vector<int>> & embedding);
 	void create_arc_indices();
 	arc create_arc(int sourceindex, int sinkindex);	// add an arc with a source and a sink
+	void update_arc(int arc_index, int sourceindex, int sinkindex); // update an arc with a new sourc and a new sink
 	vertex null_vertex();
 	arc null_arc();
 	__int64 arc_to_int64(vertex *soure, vertex *sink);
 	void reindex_arcs();
 	void reset_arc_marks();
+	void print();
+};
+
+struct planargraph : graph {
+	int max_num_arcs;
+	std::unordered_map<__int64, int> arc_map;
+	planargraph(int nv, std::vector<std::vector<int>> & embedding);
 	void check_rotational_system();
 
 };
@@ -150,17 +145,17 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 	//check_rotational_system();
 }
 
-void planargraph::create_arc_indices() {
+void graph::create_arc_indices() {
 	for (int i = 0; i <m; i++) {
 		arcs[i].index = i;
 	}
 }
 
-__int64 planargraph::arc_to_int64(vertex *source, vertex *sink) {
+__int64 graph::arc_to_int64(vertex *source, vertex *sink) {
 	return ((__int64)source->index << 32) + (__int64)sink->index;
 }
 
-arc planargraph::create_arc(int sourceindex, int sinkindex) {
+arc graph::create_arc(int sourceindex, int sinkindex) {
 	arc a {};
 	a.source = &vertices[sourceindex];
 	a.sink = &vertices[sinkindex];
@@ -172,13 +167,23 @@ arc planargraph::create_arc(int sourceindex, int sinkindex) {
 	return a;
 }
 
-vertex planargraph::null_vertex() {
+void graph::update_arc(int arc_index, int sourceindex, int sinkindex) {
+	arcs[arc_index].source = &vertices[sourceindex];
+	arcs[arc_index].sink = &vertices[sinkindex];
+	arcs[arc_index].nextarc = nullptr;
+	arcs[arc_index].prevarc = nullptr;
+	arcs[arc_index].rev = nullptr;
+	arcs[arc_index].mark = false;
+	arcs[arc_index].version = 0;
+}
+
+vertex graph::null_vertex() {
 	vertex v{};
 	v.id = -1;
 	return v;
 }
 
-arc planargraph::null_arc() {
+arc graph::null_arc() {
 	arc a{};
 	a.source = nullptr;
 	a.sink = nullptr;
@@ -190,12 +195,12 @@ arc planargraph::null_arc() {
 	a.version = 0;
 	return a;
 }
-void planargraph::reindex_arcs() {
+void graph::reindex_arcs() {
 	for (int i = 0; i < m; i++) {
 		arcs[i].index = i;
 	}
 }
-void planargraph::reset_arc_marks() {
+void graph::reset_arc_marks() {
 	for (int i = 0; i < m; i++) {
 		arcs[i].mark = false;
 	}
@@ -203,6 +208,19 @@ void planargraph::reset_arc_marks() {
 
 void graph::print_arc(arc *a) {
 	printf("%d->%d\n", a->source->id, a->sink->id);
+}
+
+void graph::print() {
+	printf("*******************************************\n");
+	printf("Adjacency list:\n");
+	for (int i = 0; i < n; i++) {
+		printf("%d:\t", i);
+		for (std::vector<arc*>::iterator arc_it = vertices[i].arclist.begin(); arc_it != vertices[i].arclist.end(); ++arc_it) {
+			printf("%d\t", (*arc_it)->sink->id);
+		}
+		printf("\n");
+	}
+	printf("*******************************************\n");
 }
 
 void planargraph::check_rotational_system() {
