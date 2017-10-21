@@ -7,6 +7,7 @@
 #include "bfs_tree.h"
 #include "stdafx.h"
 #include "dual_tree.h"
+#include "low_radius_separator.h"
 #include "reversible_list.h"
 #include <vector>
 #include <ctime> // time_t
@@ -105,18 +106,20 @@ struct sample_face_visitor : face_traversal_visitor {
 
 int main() {
 	
-	vector<vector<int>> embedding = create_sample_3x3_grid_embedding();
+	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
 	planargraph g(9, embedding);
 	planar_triangulate(g);
-	g.print();
+	//g.print();
 	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 	bfs(&g.vertices[0], g, primal_bfs_tree);
-	primal_bfs_tree.print();
+	//primal_bfs_tree.print();
 	dual_tree dual_bfs_tree(primal_bfs_tree);
 	dual_tree_builder tree_buider(dual_bfs_tree);
 	planar_face_traversal(g, tree_buider);
-	dual_bfs_tree.print();
-	dual_bfs_tree.print_dual_faces();
+	//dual_bfs_tree.print();
+	//dual_bfs_tree.print_dual_faces();
+	find_low_radius_separator(dual_bfs_tree);
+	
 //	vector<vector<int>> embedding = create_sample_deg_1_embedding();
 //	planargraph g(4, embedding);
 
