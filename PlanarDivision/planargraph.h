@@ -175,6 +175,7 @@ void graph::update_arc(int arc_index, int sourceindex, int sinkindex) {
 	arcs[arc_index].rev = nullptr;
 	arcs[arc_index].mark = false;
 	arcs[arc_index].version = 0;
+	arcs[arc_index].index = arc_index;
 }
 
 vertex graph::null_vertex() {

@@ -141,6 +141,7 @@ T srlist<T>::front() {
 	return _head->_neighbors[0]->_data;
 }
 
+//http://www.cplusplus.com/reference/list/list/splice/
 template<typename T>
 void srlist<T>::splice(srlist<T> _arg_list) {
 	_size += _arg_list.size();

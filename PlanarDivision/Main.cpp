@@ -21,6 +21,7 @@ vector<vector<int>> create_sample_3x3_grid_embedding();
 vector<vector<int>> create_sample_deg_1_embedding();
 vector<vector<int>> create_sample_grid_nxn_embedding(int n);
 vector<vector<int>> create_sample_star_1xn_embedding(int n);
+vector<vector<int>> create_special_embedding();
 void benchmarking();
 struct sample_face_visitor;
 struct sample_bfs_visitor;
@@ -106,10 +107,12 @@ struct sample_face_visitor : face_traversal_visitor {
 
 int main() {
 	
-	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
-	planargraph g(9, embedding);
-	planar_triangulate(g);
+//	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
+//	planargraph g(9, embedding);
+//	planar_triangulate(g);
 	//g.print();
+	vector<vector<int>> embedding = create_special_embedding();
+	planargraph g(5, embedding);
 	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 	bfs(&g.vertices[0], g, primal_bfs_tree);
 	//primal_bfs_tree.print();
@@ -137,6 +140,8 @@ int main() {
 //	sample_face_visitor face_visitor;
 //	planar_face_traversal(g, face_visitor);
 //	benchmarking();
+//	srlist<int> sample_list;
+//	sample_list.debug();
 	getchar();
 	return 0;
 }
@@ -210,6 +215,31 @@ void benchmarking() {
 
 }
 
+// this planar graph  is smallest that allows one to test all four cases of low radius separator algorithm
+vector<vector<int>> create_special_embedding() {
+	vector<vector<int>> embedding_storage;
+	vector<int> rot0;
+	rot0.push_back(2); rot0.push_back(3); rot0.push_back(1);
+	embedding_storage.push_back(rot0);
+
+	vector<int> rot1;
+	rot1.push_back(0); rot1.push_back(3); rot1.push_back(4); rot1.push_back(2);
+	embedding_storage.push_back(rot1);
+
+	vector<int> rot2;
+	rot2.push_back(1); rot2.push_back(4); rot2.push_back(3); rot2.push_back(0);
+	embedding_storage.push_back(rot2);
+
+	vector<int> rot3;
+	rot3.push_back(0); rot3.push_back(2); rot3.push_back(4); rot3.push_back(1);
+	embedding_storage.push_back(rot3);
+
+	vector<int> rot4;
+	rot4.push_back(3); rot4.push_back(2); rot4.push_back(1); 
+	embedding_storage.push_back(rot4);
+	return embedding_storage;
+
+}
 
 vector<vector<int>> create_sample_3x3_grid_embedding() {
 	vector<vector<int>> embedding_storage;

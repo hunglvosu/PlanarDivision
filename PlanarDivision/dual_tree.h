@@ -70,7 +70,7 @@ struct dual_tree_builder : face_traversal_visitor {
 	void end_traversal() {
 		printf("building the dual tree\n");
 		int m = dtree.primal_tree.g.m;
-		arc *arcs = dtree.primal_tree.g.arcs;
+		arc *primal_arcs = dtree.primal_tree.g.arcs;
 		bool *primal_tree_arc_marker = dtree.primal_tree.tree_arc_marker;
 		bool *arc_marker = new bool[m];
 		int dual_u_index, dual_v_index;
@@ -78,10 +78,10 @@ struct dual_tree_builder : face_traversal_visitor {
 		int uv_arc_index = -1, vu_arc_index = -1;
 		for (int i = 0; i < m; i++) arc_marker[i] = false;
 		for (int i = 0; i < m; i++) {
-			if ((!primal_tree_arc_marker[arcs[i].index]) && (!primal_tree_arc_marker[arcs[i].rev->index]) && (arc_marker[i])) {
+			if ((!primal_tree_arc_marker[primal_arcs[i].index]) && (!primal_tree_arc_marker[primal_arcs[i].rev->index]) && (arc_marker[i])) {
 				
-				dual_u_index = dtree.arc_index_to_dual_vertex_index[arcs[i].index];
-				dual_v_index = dtree.arc_index_to_dual_vertex_index[arcs[i].rev->index];
+				dual_u_index = dtree.arc_index_to_dual_vertex_index[primal_arcs[i].index];
+				dual_v_index = dtree.arc_index_to_dual_vertex_index[primal_arcs[i].rev->index];
 				// add u->v arc and v->u arc to the dual tree
 				uv_arc_index = current_arc_index + 1;
 				vu_arc_index = current_arc_index + 2;
@@ -91,10 +91,13 @@ struct dual_tree_builder : face_traversal_visitor {
 				dtree.arcs[vu_arc_index].rev = &dtree.arcs[uv_arc_index];
 				dtree.vertices[dual_u_index].arclist.push_back(&dtree.arcs[uv_arc_index]);
 				dtree.vertices[dual_v_index].arclist.push_back(&dtree.arcs[vu_arc_index]);
+				// we use nextarc pointer to point to the corresponding primal arc
+				dtree.arcs[uv_arc_index].nextarc = &primal_arcs[i];
+				dtree.arcs[vu_arc_index].nextarc = primal_arcs[i].rev;
 				current_arc_index += 2;
 			}
 			arc_marker[i] = true;
-			arc_marker[arcs[i].rev->index] = true;
+			arc_marker[primal_arcs[i].rev->index] = true;
 		}
 		delete arc_marker;
 	}

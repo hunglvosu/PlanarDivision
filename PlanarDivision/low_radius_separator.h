@@ -51,7 +51,7 @@ struct separation_edge_locator :  dfs_visitor{
 		//printf("Forward or cross arc %d->%d\n", uv->source->id, uv->sink->id);
 	}
 
-	void finish_vertex(vertex *u) {
+	/*	void finish_vertex(vertex *u) {
 		/*printf("finish: %d\n", u->index);
 		printf("face:\n");
 		arc *uv = &dual_bfs_tree.primal_tree.g.arcs[dual_vertex_index_to_arc_index[u->index]];
@@ -59,7 +59,7 @@ struct separation_edge_locator :  dfs_visitor{
 		arc *current;
 		for (current = uv->rev->prevarc; current != uv; current = current->rev->prevarc) {
 			dual_bfs_tree.print_arc(current);
-		}*/
+		}
 		int degree_of_u = u->arclist.size();
 		
 		arc **arcs_on_face = new arc*[3]; // set of arcs on the dual face of u
@@ -88,25 +88,37 @@ struct separation_edge_locator :  dfs_visitor{
 			cycle_ptrs[u->index] = &cycles[u->index];
 		}
 		else if (degree_of_u == 2) {
-			printf("Case 2 or Case 3 at %d\n", u->index);
+			//printf("Case 2 or Case 3 at %d\n", u->index);
 			// v  is the children of u
-			vertex *v = is_visited[u->arclist[0]->index] ? u->arclist[0]->sink : u->arclist[1]->sink;
-			int xy_index = 0, xz_index = 0, zy_index = 0;
-			for (int i = 0; i < 3; i++) {
-				if (primal_tree_arc_marker[arcs_on_face[i]->index] || primal_tree_arc_marker[arcs_on_face[i]->rev->index]) {
-					xz_index = i;
-				}
-				else if (arc_index_to_dual_vertex_index[arcs_on_face[i]->rev->index] == v->index) {
-					zy_index = i;
-				}
-				else {
-					xy_index = i;
-				}
+//			arc *vu_arc = is_visited[u->arclist[0]->index] ? u->arclist[0]->rev : u->arclist[1]->rev;
+//			vertex *v = vu_arc->source;
+//			arc* primal_vu_arc = vu_arc->prevarc;
+//			arc* primal_uv_arc = primal_vu_arc->rev;
+			arc *uv_arc = is_visited[u->arclist[0]->index] ? u->arclist[0] : u->arclist[1];
+			vertex *v = uv_arc->sink;
+			arc *primal_uv_arc = uv_arc->prevarc;
+			srlist<int>* v_cycle_ptr = cycle_ptrs[v->index];
+			int x_index = (*v_cycle_ptr).front();
+			(*v_cycle_ptr).remove_front();
+			int y_index = (*v_cycle_ptr).back();
+			(*v_cycle_ptr).remove_back();
+			
+			vertex *z = primal_uv_arc->rev->sink;
+			if (z->index = (*v_cycle_ptr).front()) {
+				printf("Case 3 at %d\n", u->index);
+				(*v_cycle_ptr).push_back(y_index);	// push y back to the cycle
+				cycle_ptrs[u->index] = v_cycle_ptr;
 			}
-			vertex *x = arcs_on_face[xy_index]->source;
-			vertex *y = arcs_on_face[xy_index]->sink;
-			vertex *z = arcs_on_face[xy_index]->rev->prevarc->sink;
+			else if (z->index == (*v_cycle_ptr).back()) {
+				printf("Case 3 at %d\n", u->index);
+				(*v_cycle_ptr).push_back(x_index); // push x back to the cycle
+				cycle_ptrs[u->index] = v_cycle_ptr;
+			}
+			else {
+				printf("Case 2 at %d\n", u->index);
+				// need to decide whether to put z to the front or back of the cycle corresponding to v
 
+			}
 		}
 		else {
 			// degree_of_u == 3
@@ -148,7 +160,89 @@ struct separation_edge_locator :  dfs_visitor{
 			(*v_cycle_ptr).print();
 			cycle_ptrs[u->index] = v_cycle_ptr;
 			inside_count[u->index] = inside_count[u_children[0]->index] + inside_count[u_children[1]->index] + p - 1;
+		}
+		is_visited[u->index] = true;
+	}*/
 
+	void finish_vertex(vertex *u) {
+
+		int degree_of_u = u->arclist.size();
+
+		if (degree_of_u <= 1) {
+			// v is the parent of u in the dfs tree
+			arc *uv_arc = u->arclist[0];
+			arc *primal_uv_arc = uv_arc->nextarc;	// primal_uv_arc defines the dual face of u
+			cycles[u->index].push_back(primal_uv_arc->sink->index);
+			cycles[u->index].push_back(primal_uv_arc->rev->prevarc->sink->index);
+			cycles[u->index].push_back(primal_uv_arc->source->index);
+			//printf("cycle at leaf:\n");
+			//cycles[u->index].print();
+			cycle_ptrs[u->index] = &cycles[u->index];
+		}
+		else if (degree_of_u == 2) {
+			// v is the only child of u in the dfs tree
+			arc *uv_arc = is_visited[u->arclist[0]->index] ? u->arclist[0] : u->arclist[1];
+			vertex *v = uv_arc->sink;
+			arc *primal_uv_arc = uv_arc->prevarc;
+			srlist<int>* v_cycle_ptr = cycle_ptrs[v->index];
+			int x_index = (*v_cycle_ptr).front();
+			(*v_cycle_ptr).remove_front();
+			int y_index = (*v_cycle_ptr).back();
+			(*v_cycle_ptr).remove_back();
+
+			vertex *z = primal_uv_arc->rev->sink;
+			if (z->index = (*v_cycle_ptr).front()) {
+				printf("Case 3 at %d\n", u->index);
+				(*v_cycle_ptr).push_back(y_index);	// push y back to the cycle
+				cycle_ptrs[u->index] = v_cycle_ptr;
+			}
+			else if (z->index == (*v_cycle_ptr).back()) {
+				printf("Case 3 at %d\n", u->index);
+				(*v_cycle_ptr).push_back(x_index); // push x back to the cycle
+				cycle_ptrs[u->index] = v_cycle_ptr;
+			}
+			else {
+				printf("Case 2 at %d\n", u->index);
+				// need to decide whether to put z to the front or back of the cycle corresponding to v
+
+			}
+		}
+		else {
+			// degree_of_u == 3
+			printf("Case 4 at %d\n", u->index);
+			// find children of u in the dfs tree
+			arc** children_arc_ptrs = new arc*[2];
+			int j = 0;
+			for (int i = 0; i < u->arclist.size(); i++) {
+				if (is_visited[u->arclist[i]->sink->index]) {
+					children_arc_ptrs[j] = u->arclist[i];
+					j++;
+				}
+			}
+			arc* left_child = children_arc_ptrs[0];
+			arc *right_child = children_arc_ptrs[1];
+			if (children_arc_ptrs[1]->sink->index == children_arc_ptrs[0]->source->index) {
+				right_child = left_child;
+				left_child = children_arc_ptrs[0];
+			}
+			printf("children of %d is: %d\t%d\n", u->index, left_child->sink->index, right_child->sink->index);
+			srlist<int>* cycle_ptr_left = cycle_ptrs[left_child->sink->index];
+			srlist<int>* cycle_ptr_right = cycle_ptrs[right_child->sink->index];
+
+			int last_equal;
+			int p = 0;
+			while ((*cycle_ptr_left).front() == (*cycle_ptr_right).back()) {
+				last_equal = (*cycle_ptr_left).front();
+				(*cycle_ptr_left).remove_front();
+				(*cycle_ptr_right).remove_back();
+				p++;
+			}
+			// push back the last vertex that are the same for both v and w
+			(*cycle_ptr_left).push_front(last_equal);
+			(*cycle_ptr_right).push_back(last_equal);
+			(*cycle_ptr_right).splice((*cycle_ptr_left));
+			cycle_ptrs[u->index] = cycle_ptr_right;
+			inside_count[u->index] = inside_count[left_child->sink->index] + inside_count[right_child->sink->index] + p - 1;
 		}
 		is_visited[u->index] = true;
 	}
