@@ -113,15 +113,16 @@ int main() {
 	//g.print();
 	vector<vector<int>> embedding = create_special_embedding();
 	planargraph g(5, embedding);
-	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
-	bfs(&g.vertices[0], g, primal_bfs_tree);
+	find_low_radius_separator(g);
+//	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
+//	bfs(&g.vertices[0], g, primal_bfs_tree);
 	//primal_bfs_tree.print();
-	dual_tree dual_bfs_tree(primal_bfs_tree);
-	dual_tree_builder tree_buider(dual_bfs_tree);
-	planar_face_traversal(g, tree_buider);
+//	dual_tree dual_bfs_tree(primal_bfs_tree);
+//	dual_tree_builder tree_buider(dual_bfs_tree);
+//	planar_face_traversal(g, tree_buider);
 	//dual_bfs_tree.print();
 	//dual_bfs_tree.print_dual_faces();
-	find_low_radius_separator(dual_bfs_tree);
+//	find_low_radius_separator(dual_bfs_tree);
 	
 //	vector<vector<int>> embedding = create_sample_deg_1_embedding();
 //	planargraph g(4, embedding);
@@ -139,9 +140,10 @@ int main() {
 //	g.check_rotational_system();
 //	sample_face_visitor face_visitor;
 //	planar_face_traversal(g, face_visitor);
-//	benchmarking();
 //	srlist<int> sample_list;
 //	sample_list.debug();
+
+	benchmarking();
 	getchar();
 	return 0;
 }
@@ -212,6 +214,12 @@ void benchmarking() {
 	time(&end);
 	difference = difftime(end, begin);
 	printf("time taken to build a dual bfs tree of mil g %.2lf seconds.\n", difference);
+
+	time(&begin);
+	find_low_radius_separator(g);
+	time(&end);
+	difference = difftime(end, begin);
+	printf("time taken to find a separator of mil g %.2lf seconds.\n", difference);
 
 }
 
