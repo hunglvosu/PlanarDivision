@@ -107,12 +107,12 @@ struct sample_face_visitor : face_traversal_visitor {
 
 int main() {
 	
-//	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
-//	planargraph g(9, embedding);
-//	planar_triangulate(g);
+	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
+	planargraph g(16, embedding);
+	planar_triangulate(g);
 	//g.print();
-	vector<vector<int>> embedding = create_special_embedding();
-	planargraph g(5, embedding);
+//	vector<vector<int>> embedding = create_special_embedding();
+//	planargraph g(5, embedding);
 	find_low_radius_separator(g);
 //	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 //	bfs(&g.vertices[0], g, primal_bfs_tree);
@@ -143,7 +143,7 @@ int main() {
 //	srlist<int> sample_list;
 //	sample_list.debug();
 
-	benchmarking();
+//	benchmarking();
 	getchar();
 	return 0;
 }
@@ -200,7 +200,7 @@ void benchmarking() {
 	difference = difftime(end, begin);
 	printf("time taken to dfs 1 mil g %.2lf seconds.\n", difference);
 
-	time(&begin);
+	/*time(&begin);
 	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 	bfs(&g.vertices[0], g, primal_bfs_tree);
 	time(&end);
@@ -213,7 +213,7 @@ void benchmarking() {
 	planar_face_traversal(g, tree_buider);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken to build a dual bfs tree of mil g %.2lf seconds.\n", difference);
+	printf("time taken to build a dual bfs tree of mil g %.2lf seconds.\n", difference);*/
 
 	time(&begin);
 	find_low_radius_separator(g);

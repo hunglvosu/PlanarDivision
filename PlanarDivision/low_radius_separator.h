@@ -244,10 +244,12 @@ struct separation_edge_locator : dfs_visitor {
 				}
 			}
 			arc* left_child = children_arc_ptrs[0];
+			arc *dual_left_child = left_child->rev->nextarc;
 			arc *right_child = children_arc_ptrs[1];
-			if (children_arc_ptrs[1]->sink->index == children_arc_ptrs[0]->source->index) {
+			arc *dual_right_child = right_child->rev->nextarc;
+			if (dual_left_child->sink->index != dual_right_child->source->index) {
 				right_child = left_child;
-				left_child = children_arc_ptrs[0];
+				left_child = children_arc_ptrs[1];
 			}
 			srlist<int>* cycle_ptr_left = cycle_ptrs[left_child->sink->index];
 			srlist<int>* cycle_ptr_right = cycle_ptrs[right_child->sink->index];
@@ -267,7 +269,7 @@ struct separation_edge_locator : dfs_visitor {
 			cycle_ptrs[u->index] = cycle_ptr_right;
 			inside_count[u->index] = inside_count[left_child->sink->index] + inside_count[right_child->sink->index] + p - 1;
 		}
-		//printf("cycle at %d:\n", u->index);
+		//printf("*******************cycle at %d**********************:\n", u->index);
 		//(*cycle_ptrs[u->index]).print();
 		//printf("inside count %d\n", inside_count[u->index]);
 		//printf("|c(e)| = %d\n", (*cycle_ptrs[u->index]).size());
@@ -296,9 +298,13 @@ void find_low_radius_separator(dual_tree dual_bfs_tree) {
 void find_low_radius_separator(planargraph &g) {
 	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 	bfs(&g.vertices[0], g, primal_bfs_tree);
+	//primal_bfs_tree.print();
 	dual_tree dual_bfs_tree(primal_bfs_tree);
 	dual_tree_builder tree_buider(dual_bfs_tree);
 	planar_face_traversal(g, tree_buider);
+	//dual_bfs_tree.print();
+	//dual_bfs_tree.print_dual_faces();
+
 	std::vector<int> separator_container;
 	separation_edge_locator edge_locator(dual_bfs_tree, &separator_container);
 	// find a leaf of the dual tree to be the start vertex of dfs
@@ -307,5 +313,9 @@ void find_low_radius_separator(planargraph &g) {
 		if (dual_bfs_tree.vertices[i].arclist.size() == 1) s = i;
 	}
 	dfs(&dual_bfs_tree.vertices[s], dual_bfs_tree, edge_locator);
-	printf("Separator size %ld", separator_container.size());
+	printf("Separator size %ld\n", separator_container.size());
+	/*for (int i = 0; i < separator_container.size(); i++) {
+		printf("%d\t", separator_container[i]);
+	}
+	printf("\n");*/
 }
