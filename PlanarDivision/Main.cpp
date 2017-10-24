@@ -8,6 +8,7 @@
 #include "stdafx.h"
 #include "dual_tree.h"
 #include "low_radius_separator.h"
+#include "planar_separator.h"
 #include "reversible_list.h"
 #include <vector>
 #include <ctime> // time_t
@@ -23,6 +24,7 @@ vector<vector<int>> create_sample_grid_nxn_embedding(int n);
 vector<vector<int>> create_sample_star_1xn_embedding(int n);
 vector<vector<int>> create_special_embedding();
 void benchmarking();
+void test_smart_pointer();
 struct sample_face_visitor;
 struct sample_bfs_visitor;
 struct sample_dfs_visitor;
@@ -113,7 +115,16 @@ int main() {
 	//g.print();
 //	vector<vector<int>> embedding = create_special_embedding();
 //	planargraph g(5, embedding);
-	find_low_radius_separator(g);
+	std::vector<int> separator_container;
+	find_low_radius_separator(g, separator_container);
+	
+	//find_separator(g, separator_container);
+	printf("Separator size %ld\n", separator_container.size());
+	for (int i = 0; i < separator_container.size(); i++) {
+	printf("%d\t", separator_container[i]);
+	}
+	printf("\n");
+
 //	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 //	bfs(&g.vertices[0], g, primal_bfs_tree);
 	//primal_bfs_tree.print();
@@ -143,11 +154,20 @@ int main() {
 //	srlist<int> sample_list;
 //	sample_list.debug();
 
-//	benchmarking();
+	benchmarking();
 	getchar();
 	return 0;
 }
 
+void test_smart_pointer() {
+	int *arr = new int[100000000];
+	//std::unique_ptr<int[]> arr(new int[100000000]);
+	for (int i = 0; i < 100; i++) arr[i] = i + 1;
+	for (int i = 0; i < 100; i++) {
+		std::cout << arr[i];
+	}
+	delete[] arr;
+}
 void benchmarking() {
 	time_t begin, end;
 	printf("creating the embedding");
@@ -216,7 +236,8 @@ void benchmarking() {
 	printf("time taken to build a dual bfs tree of mil g %.2lf seconds.\n", difference);*/
 
 	time(&begin);
-	find_low_radius_separator(g);
+	std::vector<int> separator_container;
+	find_low_radius_separator(g, separator_container);
 	time(&end);
 	difference = difftime(end, begin);
 	printf("time taken to find a separator of mil g %.2lf seconds.\n", difference);

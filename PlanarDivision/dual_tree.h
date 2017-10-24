@@ -26,9 +26,15 @@ struct  dual_tree : graph
 		dual_vertex_index_to_arc_index = new int[n];
 		arc_index_to_dual_vertex_index = new int[primal_tree.g.m];
 	}
-
 	void print_dual_faces();
+	void release() {
+		delete[] arc_index_to_dual_vertex_index;
+		delete[] dual_vertex_index_to_arc_index;
+		delete[] vertices;
+		delete[] arcs;
+	}
 };
+
 
 void dual_tree::print_dual_faces() {
 	for (int i = 0; i < n; i++) {
@@ -99,7 +105,7 @@ struct dual_tree_builder : face_traversal_visitor {
 			arc_marker[i] = true;
 			arc_marker[primal_arcs[i].rev->index] = true;
 		}
-		delete arc_marker;
+		delete[] arc_marker;
 	}
 
 };

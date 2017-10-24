@@ -5,43 +5,6 @@
 // we adopt visitor class definition of boost
 // see http://www.boost.org/doc/libs/1_65_1/libs/graph/doc/DFSVisitor.html for more details
 
-
-/*
-void recursive_dfs(vertex *u, planargraph &g, dfs_visitor &vis, int *color) {
-	color[u->index] = g.gray;
-	arc *uv;
-	vertex *v;
-	for (std::vector<arc*>::iterator it = g.vertices[u->index].arclist.begin(); it != g.vertices[u->index].arclist.end(); ++it) {
-		uv = *it;
-		vis.examine_arc(uv);
-		v = uv->sink;
-		if (color[v->index] == g.white) {
-			vis.discover_vertex(v);
-			color[v->index] = g.gray;
-			vis.tree_arc(uv);
-			recursive_dfs(v, g, vis, color);
-		}
-		else if (color[v->index] == g.gray) {
-			vis.back_arc(uv);
-		}
-		else {	// color[v] = black
-			vis.forward_or_cross_arc(uv);
-		}
-	}
-	color[u->index] = g.black;
-	vis.finish_vertex(u);
-}
-
-void dfs(vertex *source, planargraph &g, dfs_visitor &vis) {
-	int *color = new int[g.n];
-	for (int i = 0; i < g.n; i++) {
-		color[i] = g.white;
-	}
-	vis.discover_vertex(source);
-	recursive_dfs(source, g, vis, color);
-	delete color;
-}
-*/
 struct dfs_visitor {
 
 	virtual void discover_vertex(vertex *u) {};
@@ -101,5 +64,5 @@ void dfs(vertex *source, graph &g, dfs_visitor &vis) {
 		color[u->index] = g.black;
 		vis.finish_vertex(u);
 	}
-	delete color;
+	delete[] color;
 }

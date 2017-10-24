@@ -54,6 +54,9 @@
     <ClInclude Include="low_radius_separator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="planar_separator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

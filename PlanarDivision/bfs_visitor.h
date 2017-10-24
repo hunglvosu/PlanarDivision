@@ -59,5 +59,5 @@ void bfs(vertex *source, graph &g, bfs_visitor &vis) {
 		color[u->index] = g.black;
 		vis.finish_vertex(u);
 	}
-	delete color;
+	delete[] color;
 }

@@ -153,6 +153,7 @@
     <ClInclude Include="low_radius_separator.h" />
     <ClInclude Include="planargraph.h" />
     <ClInclude Include="planar_face_visitor.h" />
+    <ClInclude Include="planar_separator.h" />
     <ClInclude Include="planar_triangulator.h" />
     <ClInclude Include="reversible_list.h" />
     <ClInclude Include="stdafx.h" />
