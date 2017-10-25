@@ -24,6 +24,7 @@ vector<vector<int>> create_sample_deg_1_embedding();
 vector<vector<int>> create_sample_grid_nxn_embedding(int n);
 vector<vector<int>> create_sample_star_1xn_embedding(int n);
 vector<vector<int>> create_special_embedding();
+vector<vector<int>> create_planar_path(int n);
 void benchmarking();
 void test_smart_pointer();
 struct sample_face_visitor;
@@ -110,13 +111,14 @@ struct sample_face_visitor : face_traversal_visitor {
 
 int main() {
 	
-	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
-	planargraph g(16, embedding);
-//	planar_triangulate(g);
+//	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
+	vector<vector<int>> embedding = create_planar_path(5);
+	planargraph g(5, embedding);
+	planar_triangulate(g);
 //	g.reset();
-//	g.print();
+	g.print();
 //	g.check_rotational_system();
-	compute_r_division(g, 4);
+//	compute_r_division(g, 4);
 	//g.print();
 //	vector<vector<int>> embedding = create_special_embedding();
 //	planargraph g(5, embedding);
@@ -370,4 +372,21 @@ vector<vector<int>> create_sample_star_1xn_embedding(int n) {
 	embedding_storage.push_back(rot_n_1);
 	return embedding_storage;
 
+}
+
+vector<vector<int>> create_planar_path(int n) {
+	vector<vector<int>> embedding_storage;
+	vector<int> rot0;
+	rot0.push_back(1);
+	embedding_storage.push_back(rot0);
+	for (int i = 1; i < n - 1; i++) {
+		vector<int> rot;
+		rot.push_back(i-1);
+		rot.push_back(i + 1);
+		embedding_storage.push_back(rot);
+	}
+	vector<int> rot_n_1;
+	rot_n_1.push_back(n - 2);
+	embedding_storage.push_back(rot_n_1);
+	return embedding_storage;
 }

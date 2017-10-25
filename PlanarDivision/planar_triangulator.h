@@ -79,7 +79,7 @@ struct  triangulator : face_traversal_visitor
 		arc *uv, *vu, *uy, *yv, *vx, *xu;
 		vertex *x, *y;
 		// recall for each new arc uv and vu are located consecutively on the array
-		for (int i = g.m; i < num_arcs_store_in_g - 1; i++) {
+		for (int i = g.m; i < num_arcs_store_in_g ; i++) {
 			if (g.arc_map.find(g.arc_to_int64(g.arcs[i].source, g.arcs[i].sink))  != g.arc_map.end()) {
 				uv = &g.arcs[i];
 				vu = uv->rev;
@@ -113,6 +113,7 @@ struct  triangulator : face_traversal_visitor
 			}
 			g.arc_map.insert(arc_map_type::value_type(g.arc_to_int64(g.arcs[i].source, g.arcs[i].sink), i));
 			g.arcs[i].source->arclist.push_back(&g.arcs[i]);
+			printf("update neighbor of %d\n", g.arcs[i].source->index);
 		}
 		// update the neighbor list of new added arcs;
 		
