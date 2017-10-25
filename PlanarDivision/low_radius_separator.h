@@ -199,7 +199,4 @@ void find_low_radius_separator(planargraph &g, std::vector<int> &separator_conta
 	}
 	dfs(&dual_bfs_tree.vertices[s], dual_bfs_tree, edge_locator);
 
-	primal_bfs_tree.release();
-	dual_bfs_tree.release();
-
 }

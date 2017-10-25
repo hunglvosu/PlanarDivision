@@ -113,8 +113,10 @@ int main() {
 	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
 	planargraph g(16, embedding);
 //	planar_triangulate(g);
-	compute_r_division(g);
-	
+//	g.reset();
+//	g.print();
+//	g.check_rotational_system();
+	compute_r_division(g, 4);
 	//g.print();
 //	vector<vector<int>> embedding = create_special_embedding();
 //	planargraph g(5, embedding);

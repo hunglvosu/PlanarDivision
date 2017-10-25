@@ -17,17 +17,9 @@ struct  triangulator : face_traversal_visitor
 		num_arcs_store_in_g = g.m;
 	};
 
-	void begin_traversal() {
-		//printf("Triangulating the input graph\n");
-		//printf("# arcs: %d\n", g.m);
-	}
-	void begin_face() {
-		//printf("Traverse a new face\n");
-	}
-	void next_vertex(vertex* v) {
-		
-		//printf("Process vertex %d\n", v.name);
-	}
+	void begin_traversal() {}
+	void begin_face() {}
+	void next_vertex(vertex* v) {}
 
 	void next_arc(arc* uv) {
 		vertex *u = uv->source;
@@ -64,9 +56,8 @@ struct  triangulator : face_traversal_visitor
 				uq->nextarc = prev_arc1->rev;
 				prev_arc1->rev->prevarc = uq;
 				prev_arc1 = qu;
-				// update the neighbors of u and q
-				u->arclist.push_back(uq);
-				q->arclist.push_back(qu);
+				// since we are going to flipp arcs at the end, we will update
+				// the neighbors of u and q after that
 				num_arcs_store_in_g += 2;
 			}
 		}
@@ -87,6 +78,7 @@ struct  triangulator : face_traversal_visitor
 		// need to "flip" parallel added edges
 		arc *uv, *vu, *uy, *yv, *vx, *xu;
 		vertex *x, *y;
+		// recall for each new arc uv and vu are located consecutively on the array
 		for (int i = g.m; i < num_arcs_store_in_g - 1; i++) {
 			if (g.arc_map.find(g.arc_to_int64(g.arcs[i].source, g.arcs[i].sink))  != g.arc_map.end()) {
 				uv = &g.arcs[i];
@@ -120,7 +112,10 @@ struct  triangulator : face_traversal_visitor
 				vx->rev->prevarc = uv;
 			}
 			g.arc_map.insert(arc_map_type::value_type(g.arc_to_int64(g.arcs[i].source, g.arcs[i].sink), i));
+			g.arcs[i].source->arclist.push_back(&g.arcs[i]);
 		}
+		// update the neighbor list of new added arcs;
+		
 		g.m = num_arcs_store_in_g;
 		g.num_version++;
 		g.current_version++;		// update the graph version			

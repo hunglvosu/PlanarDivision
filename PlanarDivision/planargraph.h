@@ -80,17 +80,33 @@ struct graph {
 struct planargraph : graph {
 	int max_num_arcs;
 	std::unordered_map<__int64, int> arc_map;
+	planargraph();
 	planargraph(int nv, std::vector<std::vector<int>> & embedding);
 	planargraph(int n, int m);
+	void init(int n, int m);
 	void check_rotational_system();
+	void reset();	// remove the set of added arcs, only keep arcs of version 0
+	void release();
+	// useful when doing triangulation
+	void init_arc_map();
 
 };
 
+planargraph::planargraph(){
+	vertices = nullptr;
+	arcs = nullptr;
+	n = 0;
+	m = 0;
+}
 planargraph::planargraph(int nv, int ma) {
+	init(nv, ma);
+}
+
+void planargraph::init(int nv, int ma) {
 	n = nv;
 	m = ma;
-	vertices = new vertex[nv];
-	arcs = new arc[6 * n];
+	vertices = new vertex[nv+1];
+	arcs = new arc[6 * n+1];
 	max_num_arcs = 6 * n;
 }
 
@@ -153,6 +169,45 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 		u++;
 	}
 	//check_rotational_system();
+}
+
+void planargraph::reset() {
+	int num_arcs = 0;
+	for (int i = 0; i < n; i++) {
+		while (vertices[i].arclist.back()->version != 0) {
+			vertices[i].arclist.pop_back();
+		}
+		num_arcs += vertices[i].arclist.size();
+	}
+	m = num_arcs;
+	// no need to update rev
+	arc *nextarc, *prevarc; 
+	for (int i = 0; i < m; i++) {
+		nextarc = arcs[i].nextarc;
+		while (nextarc->version != 0) {
+			nextarc = nextarc->nextarc;
+		}
+		arcs[i].nextarc = nextarc;
+		prevarc = arcs[i].prevarc;
+		while (prevarc->version != 0) {
+			prevarc = prevarc->prevarc;
+		}
+		arcs[i].prevarc = prevarc;
+	}
+
+}
+void planargraph::release() {
+	delete[] vertices;
+	delete[] arcs;
+}
+
+void planargraph::init_arc_map() {
+	vertex *u_vertex, *v_vertex;
+	for (int i = 0; i < m; i++) {
+		u_vertex = arcs[i].source;
+		v_vertex = arcs[i].sink;
+		arc_map.insert(std::unordered_map<__int64, int>::value_type(arc_to_int64(u_vertex, v_vertex), i)); // put u->v arc to the map
+	}
 }
 
 void graph::create_arc_indices() {
@@ -225,9 +280,9 @@ void graph::print() {
 	printf("*******************************************\n");
 	printf("Adjacency list:\n");
 	for (int i = 0; i < n; i++) {
-		printf("%d:\t", i);
+		printf("(%d,%d):\t", i, vertices[i].id);
 		for (std::vector<arc*>::iterator arc_it = vertices[i].arclist.begin(); arc_it != vertices[i].arclist.end(); ++arc_it) {
-			printf("%d\t", (*arc_it)->sink->index);
+			printf("(%d,%d)\t", (*arc_it)->sink->index, (*arc_it)->sink->id);
 		}
 		printf("\n");
 	}
