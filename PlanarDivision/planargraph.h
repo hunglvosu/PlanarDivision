@@ -218,7 +218,7 @@ void graph::reset_arc_marks() {
 }
 
 void graph::print_arc(arc *a) {
-	printf("%d->%d\n", a->source->id, a->sink->id);
+	printf("%d->%d\n", a->source->index, a->sink->index);
 }
 
 void graph::print() {
@@ -227,7 +227,7 @@ void graph::print() {
 	for (int i = 0; i < n; i++) {
 		printf("%d:\t", i);
 		for (std::vector<arc*>::iterator arc_it = vertices[i].arclist.begin(); arc_it != vertices[i].arclist.end(); ++arc_it) {
-			printf("%d\t", (*arc_it)->sink->id);
+			printf("%d\t", (*arc_it)->sink->index);
 		}
 		printf("\n");
 	}
@@ -241,7 +241,7 @@ void planargraph::check_rotational_system() {
 		printf("%d:\t", i);
 		arc *arc_it = vertices[i].arclist.front();
 		while (arc_it->mark != true) {
-			printf("%d\t", arc_it->sink->id);
+			printf("%d\t", arc_it->sink->index);
 			arc_it->mark = true;
 			arc_it = arc_it->nextarc;
 		}
@@ -255,7 +255,7 @@ void planargraph::check_rotational_system() {
 		printf("%d:\t", i);
 		arc *arc_it = vertices[i].arclist.front();
 		while (arc_it->mark != true) {
-			printf("%d\t", arc_it->sink->id);
+			printf("%d\t", arc_it->sink->index);
 			arc_it->mark = true;
 			arc_it = arc_it->prevarc;
 		}
@@ -266,7 +266,7 @@ void planargraph::check_rotational_system() {
 	}
 	printf("Reverse check\n");
 	for (int i = 0; i < m; i++) {
-		printf("arc:(%d,%d) and its rev: (%d,%d)\n", arcs[i].source->id, arcs[i].sink->id, arcs[i].rev->source->id, arcs[i].rev->sink->id);
+		printf("arc:(%d,%d) and its rev: (%d,%d)\n", arcs[i].source->index, arcs[i].sink->index, arcs[i].rev->source->index, arcs[i].rev->sink->index);
 	}
 	printf("Checking done!\n");
 }

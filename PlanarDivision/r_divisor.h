@@ -60,12 +60,14 @@ struct graph_stats : separator_bfs_visitor{
 				arcs_of_components[source_comp_id].push_back(&g.arcs[i]);
 			}
 		}
+
 		// try to generate a planar graph from the first component
-		planargraph g_subgraph(vertices_of_components[0].size(), arcs_of_components[0].size());
+		comp_id = 1;
+		planargraph g_subgraph(vertices_of_components[comp_id].size(), arcs_of_components[comp_id].size());
 		// update vertices of the planar subgraph
 		for (int i = 0; i < g_subgraph.n; i++) {
-			g_subgraph.vertices[i].id = vertices_of_components[0][i]->id;	// recall id never change
-			vertices_of_components[0][i]->name = i; // update the name of the corresponding vertex to update arcs later on
+			g_subgraph.vertices[i].id = vertices_of_components[comp_id][i]->id;	// recall id never change
+			vertices_of_components[comp_id][i]->name = i; // update the name of the corresponding vertex to update arcs later on
 			g_subgraph.vertices[i].index = i;
 		}
 		// update arcs of the planar subgraph
@@ -73,9 +75,9 @@ struct graph_stats : separator_bfs_visitor{
 		for (int i = 0; i < g_subgraph.m; i++) {
 			// change the name of the graph to point to the index of the corresponding arc in the subgraph
 			// this will help in updating the rotational system of the subgraph
-			arcs_of_components[0][i]->name = i;	
-			source = &g_subgraph.vertices[arcs_of_components[0][i]->source->name];
-			sink = &g_subgraph.vertices[arcs_of_components[0][i]->source->name];
+			arcs_of_components[comp_id][i]->name = i;
+			source = &g_subgraph.vertices[arcs_of_components[comp_id][i]->source->name];
+			sink = &g_subgraph.vertices[arcs_of_components[comp_id][i]->sink->name];
 			g_subgraph.arcs[i].source = source;
 			g_subgraph.arcs[i].sink = sink;
 			g_subgraph.arcs[i].version = 0;
@@ -85,11 +87,12 @@ struct graph_stats : separator_bfs_visitor{
 			source->arclist.push_back(&g_subgraph.arcs[i]);
 		}
 		g_subgraph.print();
-/*		// update the nextarc, prevarc and rev pointers
+		// update the nextarc, prevarc and rev pointers
 		arc *nextarc, *prevarc;
+		
 		for (int i = 0; i < g_subgraph.m; i++) {
-			g_subgraph.arcs[i].rev = &g_subgraph.arcs[arcs_of_components[0][i]->rev->name];
-			nextarc = arcs_of_components[0][i];
+			g_subgraph.arcs[i].rev = &g_subgraph.arcs[arcs_of_components[comp_id][i]->rev->name];
+			nextarc = arcs_of_components[comp_id][i];
 			// recall that source and/or sink of nextarc could be in the separator
 			do {
 				nextarc = nextarc->nextarc;
@@ -98,14 +101,19 @@ struct graph_stats : separator_bfs_visitor{
 			} while (source_comp_id < 0 || sink_comp_id < 0);
 			g_subgraph.arcs[i].nextarc = &g_subgraph.arcs[nextarc->name];
 
-			prevarc = arcs_of_components[0][i];
+			prevarc = arcs_of_components[comp_id][i];
 			do {
 				prevarc = prevarc->prevarc;
 				source_comp_id = vertex_to_comp_id[prevarc->source->index];
 				sink_comp_id = vertex_to_comp_id[prevarc->sink->index];
 			} while (source_comp_id < 0 || sink_comp_id < 0);
 			g_subgraph.arcs[i].prevarc = &g_subgraph.arcs[prevarc->name];
-		}*/
+		}
+		g_subgraph.check_rotational_system();
+		printf("*****************vertex map*****************\n");
+		for (int i = 0; i < vertices_of_components[comp_id].size(); i++) {
+			printf("%d = %d\n", vertices_of_components[comp_id][i]->id, vertices_of_components[comp_id][i]->name);
+		}
 		for (int i = 0; i < num_components; i++) {
 			printf("vertices of comp# %d\n", i);
 			for (int j = 0; j < vertices_of_components[i].size(); j++) {
