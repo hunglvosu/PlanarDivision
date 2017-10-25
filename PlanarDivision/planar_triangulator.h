@@ -45,10 +45,10 @@ struct  triangulator : face_traversal_visitor
 				arc *uq = &g.arcs[num_arcs_store_in_g];
 				arc *qu = &g.arcs[num_arcs_store_in_g + 1];
 				uq->index = num_arcs_store_in_g;
-				uq->id = uq->index;
+				uq->name = uq->index;
 				uq->version = g.current_version + 1;	// update the arc version
 				qu->index = num_arcs_store_in_g + 1;
-				qu->id = qu->index;
+				qu->name = qu->index;
 				uq->rev = qu;
 				qu->rev = uq;
 				qu->version = g.current_version + 1;	// update the arc version

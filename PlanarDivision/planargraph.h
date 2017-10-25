@@ -17,7 +17,7 @@ struct arc {
 	arc *nextarc;	// the next arc in the clock-wise rotational system
 	arc *prevarc;	// the previous arc in the clock-wise rotational system 
 	arc *rev;		// the rever of the arc
-	int id;
+	int name;
 	int index;
 	bool mark;
 	int version;
@@ -27,11 +27,11 @@ struct arc {
 };
 
 bool arc::operator==(const arc &other) {
-	return id == other.id;
+	return name == other.name;
 }
 
 bool arc::operator!=(const arc &other) {
-	return id != other.id;
+	return name != other.name;
 }
 
 struct vertex {
@@ -81,9 +81,18 @@ struct planargraph : graph {
 	int max_num_arcs;
 	std::unordered_map<__int64, int> arc_map;
 	planargraph(int nv, std::vector<std::vector<int>> & embedding);
+	planargraph(int n, int m);
 	void check_rotational_system();
 
 };
+
+planargraph::planargraph(int nv, int ma) {
+	n = nv;
+	m = ma;
+	vertices = new vertex[nv];
+	arcs = new arc[6 * n];
+	max_num_arcs = 6 * n;
+}
 
 planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 	n = nv;
@@ -120,7 +129,7 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 			v_vertex = &vertices[*arc_it];
 			arcs[arc_index].source = u_vertex;
 			arcs[arc_index].sink = v_vertex;
-			arcs[arc_index].id = arc_index;
+			arcs[arc_index].name = arc_index;
 			arcs[arc_index].index = arc_index;
 			// update prev arc of uv in the rotation around u
 			uv_arc_index = arc_index;
@@ -189,7 +198,7 @@ arc graph::null_arc() {
 	arc a{};
 	a.source = nullptr;
 	a.sink = nullptr;
-	a.id = -1;
+	a.name = -1;
 	a.nextarc = nullptr;
 	a.prevarc = nullptr;
 	a.rev = nullptr;

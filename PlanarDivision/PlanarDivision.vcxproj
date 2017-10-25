@@ -156,6 +156,7 @@
     <ClInclude Include="planar_separator.h" />
     <ClInclude Include="planar_triangulator.h" />
     <ClInclude Include="reversible_list.h" />
+    <ClInclude Include="r_divisor.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>

@@ -10,6 +10,7 @@
 #include "low_radius_separator.h"
 #include "planar_separator.h"
 #include "reversible_list.h"
+#include "r_divisor.h"
 #include <vector>
 #include <ctime> // time_t
 #include <unordered_map>
@@ -111,20 +112,22 @@ int main() {
 	
 	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
 	planargraph g(16, embedding);
-	planar_triangulate(g);
+//	planar_triangulate(g);
+	compute_r_division(g);
+	
 	//g.print();
 //	vector<vector<int>> embedding = create_special_embedding();
 //	planargraph g(5, embedding);
-	std::vector<int> separator_container;
-	find_low_radius_separator(g, separator_container);
+//	std::vector<int> separator_container;
+//	find_low_radius_separator(g, separator_container);
 	
 	//find_separator(g, separator_container);
-	printf("Separator size %ld\n", separator_container.size());
+/*	printf("Separator size %ld\n", separator_container.size());
 	for (int i = 0; i < separator_container.size(); i++) {
 	printf("%d\t", separator_container[i]);
 	}
 	printf("\n");
-
+	*/
 //	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 //	bfs(&g.vertices[0], g, primal_bfs_tree);
 	//primal_bfs_tree.print();
@@ -154,7 +157,7 @@ int main() {
 //	srlist<int> sample_list;
 //	sample_list.debug();
 
-	benchmarking();
+//	benchmarking();
 	getchar();
 	return 0;
 }
