@@ -17,7 +17,8 @@ struct bfs_tree : bfs_visitor {
 		for (int i = 0; i < g->m; i++) tree_arc_marker[i] = false;
 	};
 
-	void release() {
+	~bfs_tree() {
+		//printf("destruct bfs primal tree\n");
 		delete[] levels;
 		delete[] tree_arc_marker;
 	}

@@ -29,13 +29,14 @@ struct  dual_tree : graph
 		dual_vertex_index_to_arc_index = new int[n];
 		arc_index_to_dual_vertex_index = new int[g->m];
 	}
-	void print_dual_faces();
-	void release() {
+	~dual_tree() {
+		//printf("destruct the dual tree\n");
 		delete[] arc_index_to_dual_vertex_index;
 		delete[] dual_vertex_index_to_arc_index;
 		delete[] vertices;
 		delete[] arcs;
 	}
+	void print_dual_faces();
 };
 
 
@@ -77,7 +78,7 @@ struct dual_tree_builder : face_traversal_visitor {
 		//printf("End traversing a face\n");
 	}
 	void end_traversal() {
-		printf("building the dual tree\n");
+		//printf("building the dual tree\n");
 		int m = dtree->primal_tree->g->m;
 		arc *primal_arcs = dtree->primal_tree->g->arcs;
 		bool *primal_tree_arc_marker = dtree->primal_tree->tree_arc_marker;

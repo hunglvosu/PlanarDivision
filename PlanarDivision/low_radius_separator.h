@@ -33,25 +33,18 @@ struct separation_edge_locator : dfs_visitor {
 		cycles = new srlist<int>[dual_bfs_tree->n];
 		cycle_ptrs = new srlist<int>*[dual_bfs_tree->n];
 	};
-	void discover_vertex(vertex *u) {
-		//printf("Encounter %d for the first time\n", u->id);
+	~separation_edge_locator() {
+		//printf("destruct separation_edge_locator\n");
+		delete[] inside_count;
+		delete[] is_visited;
+		delete[] cycles;
+		delete[] cycle_ptrs;
 	}
-
-	void examine_arc(arc *uv) {
-		//printf("Visit arc %d->%d\n", uv->source->id, uv->sink->id);
-	}
-
-	void tree_arc(arc *uv) {
-		//printf("Tree arc %d->%d\n", uv->source->id, uv->sink->id);
-	}
-
-	void back_arc(arc *uv) {
-		//printf("Back arc %d->%d\n", uv->source->id, uv->sink->id);
-	}
-
-	void forward_or_cross_arc(arc *uv) {
-		//printf("Forward or cross arc %d->%d\n", uv->source->id, uv->sink->id);
-	}
+	void discover_vertex(vertex *u) {}
+	void examine_arc(arc *uv) {}
+	void tree_arc(arc *uv) {}
+	void back_arc(arc *uv) {}
+	void forward_or_cross_arc(arc *uv) {}
 
 	void finish_vertex(vertex *u) {
 
@@ -189,8 +182,7 @@ void find_low_radius_separator(planargraph *g, std::vector<int> &separator_conta
 	dual_tree dual_bfs_tree(&primal_bfs_tree);
 	dual_tree_builder tree_buider(&dual_bfs_tree);
 	planar_face_traversal(g, tree_buider);
-	//dual_bfs_tree->print();
-	//dual_bfs_tree->print_dual_faces();
+	
 	separation_edge_locator edge_locator(&dual_bfs_tree, &separator_container);
 	// find a leaf of the dual tree to be the start vertex of dfs
 	int s = 0;
