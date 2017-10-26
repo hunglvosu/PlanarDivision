@@ -89,6 +89,7 @@ struct planargraph : graph {
 	void reset();	// remove the set of added arcs, only keep arcs of version 0
 	// useful when doing triangulation
 	void init_arc_map();
+	void add_arc_to_map(vertex *source, vertex *sink, int uv_arc_index);
 	std::vector<std::vector<int>> get_embedding();
 };
 
@@ -203,6 +204,9 @@ void planargraph::reset() {
 
 }
 
+void planargraph::add_arc_to_map(vertex *source, vertex *sink, int uv_arc_index) {
+	arc_map.insert(std::unordered_map<__int64, int>::value_type(arc_to_int64(source, sink), uv_arc_index)); // put u->v arc to the map
+}
 void planargraph::init_arc_map() {
 	vertex *u_vertex, *v_vertex;
 	for (int i = 0; i < m; i++) {

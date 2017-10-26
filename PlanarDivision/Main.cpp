@@ -129,10 +129,12 @@ void r_division_quality_test() {
 
 
 int main() {
-	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(100);
+	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
 	//vector<vector<int>> embedding = create_planar_path(5);
-	planargraph g(10000, embedding);
-	r_division_quality_test();
+	planargraph g(16, embedding);
+	std::vector<int> separator_container;
+	find_separator(g, separator_container);
+	//r_division_quality_test();
 //	g.print();
 //	planar_triangulate(&g);
 //	g.print();
