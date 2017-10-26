@@ -83,13 +83,13 @@ struct planargraph : graph {
 	planargraph();
 	planargraph(int nv, std::vector<std::vector<int>> & embedding);
 	planargraph(int n, int m);
+	~planargraph();
 	void init(int n, int m);
 	void check_rotational_system();
 	void reset();	// remove the set of added arcs, only keep arcs of version 0
-	void release();
 	// useful when doing triangulation
 	void init_arc_map();
-
+	std::vector<std::vector<int>> get_embedding();
 };
 
 planargraph::planargraph(){
@@ -105,8 +105,8 @@ planargraph::planargraph(int nv, int ma) {
 void planargraph::init(int nv, int ma) {
 	n = nv;
 	m = ma;
-	vertices = new vertex[nv+1];
-	arcs = new arc[6 * n+1];
+	vertices = new vertex[nv];
+	arcs = new arc[6 * n];
 	max_num_arcs = 6 * n;
 }
 
@@ -171,6 +171,12 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 	//check_rotational_system();
 }
 
+planargraph::~planargraph() {
+	//printf("destruct a planargraph\n");
+	delete[] vertices;
+	delete[] arcs;
+}
+
 void planargraph::reset() {
 	int num_arcs = 0;
 	for (int i = 0; i < n; i++) {
@@ -196,10 +202,6 @@ void planargraph::reset() {
 	}
 
 }
-void planargraph::release() {
-	delete[] vertices;
-	delete[] arcs;
-}
 
 void planargraph::init_arc_map() {
 	vertex *u_vertex, *v_vertex;
@@ -208,6 +210,26 @@ void planargraph::init_arc_map() {
 		v_vertex = arcs[i].sink;
 		arc_map.insert(std::unordered_map<__int64, int>::value_type(arc_to_int64(u_vertex, v_vertex), i)); // put u->v arc to the map
 	}
+}
+
+std::vector<std::vector<int>> planargraph::get_embedding() {
+	std::vector<std::vector<int>> embedding_storage;
+	for (int i = 0; i < n; i++) {
+		std::vector<int> rot; 
+		arc *arc_it = vertices[i].arclist.front();
+		while (arc_it->mark != true) {
+			//printf("%d\t", arc_it->sink->index);
+			rot.push_back(arc_it->sink->index);
+			arc_it->mark = true;
+			arc_it = arc_it->nextarc;
+		}
+		embedding_storage.push_back(rot);
+//		printf("\n");
+	}
+	for (int i = 0; i < m; i++) {
+		arcs[i].mark = false;
+	}
+	return embedding_storage;
 }
 
 void graph::create_arc_indices() {
@@ -321,7 +343,7 @@ void planargraph::check_rotational_system() {
 	}
 	printf("Reverse check\n");
 	for (int i = 0; i < m; i++) {
-		printf("arc:(%d,%d) and its rev: (%d,%d)\n", arcs[i].source->index, arcs[i].sink->index, arcs[i].rev->source->index, arcs[i].rev->sink->index);
+		printf("#%d\t arc:(%d,%d) and its rev: (%d,%d)\n",i, arcs[i].source->index, arcs[i].sink->index, arcs[i].rev->source->index, arcs[i].rev->sink->index);
 	}
 	printf("Checking done!\n");
 }

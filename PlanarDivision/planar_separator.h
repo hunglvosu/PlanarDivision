@@ -38,7 +38,7 @@ void find_separator(planargraph &g, std::vector<int> &separator_container) {
 			// found a separator
 			for (int i = 0; i < g.n; i++) {
 				if (primal_bfs_tree.levels[i] == med_level) {
-					separator_container.push_back(i);
+					//separator_container.push_back(i);
 					return;
 				}
 			}
@@ -59,7 +59,7 @@ void find_separator(planargraph &g, std::vector<int> &separator_container) {
 		// push vertices of l0 and l2 to the separator
 		for (int i = 0; i <= g.n; i++) {
 			if (primal_bfs_tree.levels[i] == l0 || primal_bfs_tree.levels[i] == l2) {
-				separator_container.push_back(i);
+				//separator_container.push_back(i);
 			}
 		}
 		// contract vertices of l1 into a new vertex

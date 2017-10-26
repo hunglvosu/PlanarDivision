@@ -6,7 +6,7 @@ typedef std::vector<vertex*> vertex_container;
 typedef std::vector<arc*> arc_container;
 
 struct graph_components : separator_bfs_visitor{
-	graph g;
+	planargraph *g;
 	int num_components;
 	std::vector<vertex_container> vertices_of_components;
 	std::vector<arc_container> arcs_of_components;
@@ -16,18 +16,34 @@ struct graph_components : separator_bfs_visitor{
 	int current_comp_index = -1;
 	int *vertex_to_comp_id;
 	
-	graph_components(planargraph &arg_g){
+	graph_components(planargraph *arg_g){
 		init(arg_g);
 	}
 	graph_components() {
 		vertex_to_comp_id = nullptr;
 		num_components = 0;
 	}
-	
-	void init(planargraph &arg_g) {
+	~graph_components() {
+		//printf("destruct graph component\n");
+		delete[] vertex_to_comp_id;
+		/*for (int i = 0; i < vertices_of_components.size(); i++) {
+			vertices_of_components[i].clear();
+			vertices_of_components[i].shrink_to_fit();
+		}
+		vertices_of_components.clear();
+		vertices_of_components.shrink_to_fit();
+		for (int j = 0; j < arcs_of_components.size(); j++) {
+			arcs_of_components[j].clear();
+			arcs_of_components[j].shrink_to_fit();
+		}
+		arcs_of_components.clear();
+		arcs_of_components.shrink_to_fit();*/
+	}
+
+	void init(planargraph *arg_g) {
 		g = arg_g;
-		vertex_to_comp_id = new int[g.n];
-		for (int i = 0; i < g.n; i++) {
+		vertex_to_comp_id = new int[g->n];
+		for (int i = 0; i < g->n; i++) {
 			vertex_to_comp_id[i] = -1;
 		}
 		num_components = 0;
@@ -54,19 +70,19 @@ struct graph_components : separator_bfs_visitor{
 			arcs_of_components.push_back(arc_container());
 		}
 		int comp_id = -1;
-		for (int i = 0; i < g.n; i++) {
+		for (int i = 0; i < g->n; i++) {
 			comp_id = vertex_to_comp_id[i];
 			if (comp_id >= 0) {
-				vertices_of_components[comp_id].push_back(&g.vertices[i]);
+				vertices_of_components[comp_id].push_back(&g->vertices[i]);
 			}
 		}
 		int source_comp_id = -1;
 		int sink_comp_id = -1;
-		for (int i = 0; i < g.m; i++) {
-			source_comp_id = vertex_to_comp_id[g.arcs[i].source->index];
-			sink_comp_id = vertex_to_comp_id[g.arcs[i].sink->index];
+		for (int i = 0; i < g->m; i++) {
+			source_comp_id = vertex_to_comp_id[g->arcs[i].source->index];
+			sink_comp_id = vertex_to_comp_id[g->arcs[i].sink->index];
 			if (source_comp_id >= 0 && sink_comp_id >= 0) {
-				arcs_of_components[source_comp_id].push_back(&g.arcs[i]);
+				arcs_of_components[source_comp_id].push_back(&g->arcs[i]);
 			}
 		}
 /*		for (int i = 0; i < num_components; i++) {
@@ -91,26 +107,11 @@ struct graph_components : separator_bfs_visitor{
 	void finish_vertex(vertex *u) {}
 	void finish_component(vertex *u) {}
 
-	void release() {
-		delete[] vertex_to_comp_id;
-		for (int i = 0; i < vertices_of_components.size(); i++) {
-			vertices_of_components[i].clear();
-			//vertices_of_components[i].shrink_to_fit();
-		}
-		vertices_of_components.clear();
-		//vertices_of_components.shrink_to_fit();
-		for (int j = 0; j < arcs_of_components.size(); j++) {
-			arcs_of_components[j].clear();
-			//arcs_of_components[j].shrink_to_fit();
-		}
-		arcs_of_components.clear();
-		//arcs_of_components.shrink_to_fit();
-	}
 };
 
 void create_subplanargraph(planargraph &g_subgraph, graph_components &g_components, int comp_id) {
 	for (int i = 0; i < g_subgraph.n; i++) {
-		g_subgraph.vertices[i].id = g_components.vertices_of_components[comp_id][i]->id;	// recall id never change
+		g_subgraph.vertices[i].id =  g_components.vertices_of_components[comp_id][i]->id;	// recall id never change
 		g_components.vertices_of_components[comp_id][i]->name = i; // update the name of the corresponding vertex to update arcs later on
 		g_subgraph.vertices[i].index = i;
 	}
@@ -163,12 +164,13 @@ void create_subplanargraph(planargraph &g_subgraph, graph_components &g_componen
 
 void compute_r_division(planargraph &g, int r) {
 	planar_triangulate(&g);
+	//int *separator_container = new int[g.n];
 	std::vector<int> separator_container;
 	find_low_radius_separator(&g, separator_container);
 	g.reset();
 	// find subgraphs of g after removing the separator
 	graph_components g_components;
-	g_components.init(g);
+	g_components.init(&g);
 	separtor_bfs(g, g_components, separator_container);
 	std::list<planargraph> big_graph_lists;	// list of subgraphs that have more than r vertices
 	std::list<planargraph> small_graph_lists;// list of subgraphs that have at most r vertices
@@ -187,19 +189,14 @@ void compute_r_division(planargraph &g, int r) {
 		}	
 	}
 
-	//planar_triangulate(big_graph_lists.back());
-	// clear the separator container and reclaim the memory
-	//separator_container.clear();
-	//find_low_radius_separator(big_graph_lists.back(), separator_container);
-/*	while (!big_graph_lists.empty()) {
+	
+	while (!big_graph_lists.empty()) {
 		printf("processsing a big graph\n");
-		planar_triangulate(big_graph_lists.back());
+		planar_triangulate(&big_graph_lists.back());
 		big_graph_lists.back().print();
 		// clear the separator container and reclaim the memory
-		std::vector<int> separator_container;
-//		separator_container.clear();
-//		separator_container.shrink_to_fit();
-		find_low_radius_separator(big_graph_lists.back(), separator_container);
+		separator_container.clear();
+		find_low_radius_separator(&big_graph_lists.back(), separator_container);
 		printf("Separator:\n");
 		for (int i = 0; i < separator_container.size(); i++) {
 			printf("%d\t", big_graph_lists.back().vertices[separator_container[i]].id);
@@ -207,8 +204,7 @@ void compute_r_division(planargraph &g, int r) {
 		printf("\n");
 		big_graph_lists.back().reset();
 		// clear g_components and relcaim the mamory
-		graph_components g_components;
-		g_components.init(big_graph_lists.back());
+		graph_components g_components(&big_graph_lists.back());
 		separtor_bfs(big_graph_lists.back(), g_components, separator_container);
 		for (int comp_id = 0; comp_id < g_components.num_components; comp_id++) {
 			if (g_components.vertices_of_components[comp_id].size() > r) {
@@ -224,17 +220,17 @@ void compute_r_division(planargraph &g, int r) {
 				create_subplanargraph(small_graph_lists.back(), g_components, comp_id);
 			}
 		}
-		//big_graph_lists.back().release();
 		big_graph_lists.pop_back();
 
-	}*/
-	/*while (!small_graph_lists.empty()) {
+	}
+	while (!small_graph_lists.empty()) {
+		printf("small component\n");
 		for (int i = 0; i < small_graph_lists.back().n; i++) {
 			printf("%d\t", small_graph_lists.back().vertices[i].id);
 		}
 		printf("\n");
 		small_graph_lists.pop_back();
-	}*/
+	}
 	
 	// try to generate a planar graph from the first component
 	//int comp_id = 1;

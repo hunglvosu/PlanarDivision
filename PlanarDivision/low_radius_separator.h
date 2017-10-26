@@ -18,7 +18,6 @@ struct separation_edge_locator : dfs_visitor {
 	srlist<int>** cycle_ptrs;
 	bool is_separator_found = false;
 	std::vector<int>* separator_container;
-
 	separation_edge_locator(dual_tree *arg_dual_tree, std::vector<int> *arg_separator_container) : dual_bfs_tree(arg_dual_tree), separator_container(arg_separator_container) {
 		arc_index_to_dual_vertex_index = dual_bfs_tree->arc_index_to_dual_vertex_index;
 		dual_vertex_index_to_arc_index = dual_bfs_tree->dual_vertex_index_to_arc_index;
@@ -47,7 +46,6 @@ struct separation_edge_locator : dfs_visitor {
 	void forward_or_cross_arc(arc *uv) {}
 
 	void finish_vertex(vertex *u) {
-
 		if (is_separator_found) return;
 		int degree_of_u = u->arclist.size();
 
@@ -160,6 +158,7 @@ struct separation_edge_locator : dfs_visitor {
 			// found a good separating edge
 			is_separator_found = true;
 			int u_index = u->index;
+			int ci = 0;
 			while (!(*cycle_ptrs[u_index]).is_empty()) {
 				(*separator_container).push_back((*cycle_ptrs[u_index]).back());
 				(*cycle_ptrs[u_index]).remove_back();
@@ -175,6 +174,7 @@ void find_low_radius_separator(dual_tree *dual_bfs_tree) {
 	dfs(&(dual_bfs_tree->vertices[0]), *(dual_bfs_tree), edge_locator);
 }
 
+// return the size of the separator
 void find_low_radius_separator(planargraph *g, std::vector<int> &separator_container) {
 	bfs_tree primal_bfs_tree(g, &(g->vertices[0]));
 	bfs(&g->vertices[0], *g, primal_bfs_tree);
@@ -182,7 +182,7 @@ void find_low_radius_separator(planargraph *g, std::vector<int> &separator_conta
 	dual_tree dual_bfs_tree(&primal_bfs_tree);
 	dual_tree_builder tree_buider(&dual_bfs_tree);
 	planar_face_traversal(g, tree_buider);
-	
+	//printf("find separation edge\n");
 	separation_edge_locator edge_locator(&dual_bfs_tree, &separator_container);
 	// find a leaf of the dual tree to be the start vertex of dfs
 	int s = 0;
@@ -190,5 +190,4 @@ void find_low_radius_separator(planargraph *g, std::vector<int> &separator_conta
 		if (dual_bfs_tree.vertices[i].arclist.size() == 1) s = i;
 	}
 	dfs(&dual_bfs_tree.vertices[s], dual_bfs_tree, edge_locator);
-
 }

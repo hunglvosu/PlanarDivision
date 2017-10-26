@@ -115,24 +115,24 @@ int main() {
 	//vector<vector<int>> embedding = create_planar_path(5);
 	planargraph g(16, embedding);
 //	g.print();
-	planar_triangulate(&g);
+//	planar_triangulate(&g);
 //	g.print();
 //	g.check_rotational_system();
 //	g.reset();
 //	g.print();
 //	g.check_rotational_system();
-//	compute_r_division(g, 4);
+	compute_r_division(g, 4);
 	//g.print();
 //	vector<vector<int>> embedding = create_special_embedding();
 //	planargraph g(5, embedding);
-	std::vector<int> separator_container;
-	find_low_radius_separator(&g, separator_container);
+/*	int *separator_container = new int[g.n];
+	int separator_size = find_low_radius_separator(&g, separator_container);
 	//find_separator(g, separator_container);
-	printf("Separator size %ld\n", separator_container.size());
-	for (int i = 0; i < separator_container.size(); i++) {
+	printf("Separator size %ld\n", separator_size);
+	for (int i = 0; i < separator_size; i++) {
 	printf("%d\t", separator_container[i]);
 	}
-	printf("\n");
+	printf("\n");*/
 	
 //	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 //	bfs(&g.vertices[0], g, primal_bfs_tree);
