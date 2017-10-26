@@ -108,12 +108,31 @@ struct sample_face_visitor : face_traversal_visitor {
 	}
 
 };
+void r_division_of_grid(planargraph &g, int n, int r) {
+	printf("********************************************\n");
+	printf("testing division quality %d-division of of %dx%d grid\n", r, n, n);
+	printf("********************************************\n");
+	//vector<vector<int>> embedding = create_sample_grid_nxn_embedding(n);
+	//planargraph g(n*n, embedding);
+	compute_r_division(g, r);
+}
+void r_division_quality_test() {
+	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(100);
+	planargraph g(100*100, embedding);
+	r_division_of_grid(g,100, 10);
+	r_division_of_grid(g, 100, 20);
+	r_division_of_grid(g, 100, 30);
+	r_division_of_grid(g, 100, 50);
+	r_division_of_grid(g, 100, 70);
+	r_division_of_grid(g, 100, 100);
+}
 
 
 int main() {
-	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
+	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(100);
 	//vector<vector<int>> embedding = create_planar_path(5);
-	planargraph g(16, embedding);
+	planargraph g(10000, embedding);
+	r_division_quality_test();
 //	g.print();
 //	planar_triangulate(&g);
 //	g.print();
@@ -121,7 +140,7 @@ int main() {
 //	g.reset();
 //	g.print();
 //	g.check_rotational_system();
-	compute_r_division(g, 4);
+//	compute_r_division(g, 10);
 	//g.print();
 //	vector<vector<int>> embedding = create_special_embedding();
 //	planargraph g(5, embedding);

@@ -163,10 +163,15 @@ void create_subplanargraph(planargraph &g_subgraph, graph_components &g_componen
 }
 
 void compute_r_division(planargraph &g, int r) {
+	int sep_count = 0;
 	planar_triangulate(&g);
 	//int *separator_container = new int[g.n];
+	std::vector<int> boundary_vertices;
 	std::vector<int> separator_container;
 	find_low_radius_separator(&g, separator_container);
+	boundary_vertices.insert(boundary_vertices.end(), separator_container.begin(), separator_container.end());
+	printf("%d-th separation\n", sep_count);
+	sep_count++;
 	g.reset();
 	// find subgraphs of g after removing the separator
 	graph_components g_components;
@@ -191,17 +196,14 @@ void compute_r_division(planargraph &g, int r) {
 
 	
 	while (!big_graph_lists.empty()) {
-		printf("processsing a big graph\n");
+		//printf("processsing a big graph\n");
 		planar_triangulate(&big_graph_lists.back());
-		big_graph_lists.back().print();
-		// clear the separator container and reclaim the memory
+		//big_graph_lists.back().print();
 		separator_container.clear();
 		find_low_radius_separator(&big_graph_lists.back(), separator_container);
-		printf("Separator:\n");
-		for (int i = 0; i < separator_container.size(); i++) {
-			printf("%d\t", big_graph_lists.back().vertices[separator_container[i]].id);
-		}
-		printf("\n");
+		boundary_vertices.insert(boundary_vertices.end(), separator_container.begin(), separator_container.end());
+		if(sep_count % 10 == 2)printf("%d-th separation\n", sep_count);
+		sep_count++;
 		big_graph_lists.back().reset();
 		// clear g_components and relcaim the mamory
 		graph_components g_components(&big_graph_lists.back());
@@ -212,7 +214,7 @@ void compute_r_division(planargraph &g, int r) {
 				big_graph_lists.push_front(planargraph());
 				big_graph_lists.front().init(g_components.vertices_of_components[comp_id].size(), g_components.arcs_of_components[comp_id].size());
 				create_subplanargraph(big_graph_lists.front(), g_components, comp_id);
-				big_graph_lists.front().print();
+				//big_graph_lists.front().print();
 			}
 			else {
 				small_graph_lists.push_back(planargraph());
@@ -223,14 +225,16 @@ void compute_r_division(planargraph &g, int r) {
 		big_graph_lists.pop_back();
 
 	}
-	while (!small_graph_lists.empty()) {
+	/*while (!small_graph_lists.empty()) {
 		printf("small component\n");
 		for (int i = 0; i < small_graph_lists.back().n; i++) {
 			printf("%d\t", small_graph_lists.back().vertices[i].id);
 		}
 		printf("\n");
 		small_graph_lists.pop_back();
-	}
+	}*/
+	printf("boundary size of the r-division: %d\n", boundary_vertices.size());
+	printf("Separation at %d quality = %lf\n", r, 1.0 - (double)boundary_vertices.size()/g.n);
 	
 	// try to generate a planar graph from the first component
 	//int comp_id = 1;
