@@ -109,14 +109,17 @@ struct sample_face_visitor : face_traversal_visitor {
 
 };
 
+
 int main() {
-	
-//	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
-	vector<vector<int>> embedding = create_planar_path(5);
-	planargraph g(5, embedding);
-	planar_triangulate(g);
-//	g.reset();
+	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(3);
+	//vector<vector<int>> embedding = create_planar_path(5);
+	planargraph g(9, embedding);
 	g.print();
+	planar_triangulate(&g);
+	g.print();
+	g.check_rotational_system();
+//	g.reset();
+//	g.print();
 //	g.check_rotational_system();
 //	compute_r_division(g, 4);
 	//g.print();
@@ -192,7 +195,7 @@ void benchmarking() {
 	printf("reading complete");
 	sample_face_visitor face_visitor;
 	time(&begin);
-	planar_face_traversal(g, face_visitor);
+	planar_face_traversal(&g, face_visitor);
 	time(&end);
 	difference = difftime(end, begin);
 	printf("time taken for visiting all faces %.2lf seconds.\n", difference);
@@ -208,7 +211,7 @@ void benchmarking() {
 
 
 	time(&begin);
-	planar_triangulate(g);
+	planar_triangulate(&g);
 	time(&end);
 	difference = difftime(end, begin);
 	printf("time taken to triangulate 1 mil g %.2lf seconds.\n", difference);
@@ -244,7 +247,7 @@ void benchmarking() {
 
 	time(&begin);
 	std::vector<int> separator_container;
-	find_low_radius_separator(g, separator_container);
+	find_low_radius_separator(&g, separator_container);
 	time(&end);
 	difference = difftime(end, begin);
 	printf("time taken to find a separator of mil g %.2lf seconds.\n", difference);

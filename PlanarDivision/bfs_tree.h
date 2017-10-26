@@ -4,17 +4,17 @@
 
 struct bfs_tree : bfs_visitor {
 
-	graph g;
+	graph *g;
 	int*  levels;
 	bool* tree_arc_marker;
 	vertex *root;
 
-	bfs_tree(graph const &arg_g, vertex *arg_root) : g(arg_g), root(arg_root) {
-		levels = new int[g.n];
-		for (int i = 0; i < g.n; i++) levels[i] = -1;
+	bfs_tree(graph *arg_g, vertex *arg_root) : g(arg_g), root(arg_root) {
+		levels = new int[g->n];
+		for (int i = 0; i < g->n; i++) levels[i] = -1;
 		levels[root->index] = 0;
-		tree_arc_marker = new bool[g.m];
-		for (int i = 0; i < g.m; i++) tree_arc_marker[i] = false;
+		tree_arc_marker = new bool[g->m];
+		for (int i = 0; i < g->m; i++) tree_arc_marker[i] = false;
 	};
 
 	void release() {
@@ -52,11 +52,11 @@ struct bfs_tree : bfs_visitor {
 
 	void print() {
 		std::cout << "Levels: \n" << std::endl;
-		for (int i = 0; i < g.n; i++) std::cout << "level[" << i << "] = " << levels[i] << std::endl;
+		for (int i = 0; i < g->n; i++) std::cout << "level[" << i << "] = " << levels[i] << std::endl;
 		std::cout << "Tree arcs: \n" << std::endl;
-		for (int i = 0; i < g.m; i++) {
+		for (int i = 0; i < g->m; i++) {
 			if (tree_arc_marker[i]) {
-				g.print_arc(&g.arcs[i]);
+				g->print_arc(&g->arcs[i]);
 			}
 		}
 	}

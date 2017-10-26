@@ -6,7 +6,7 @@
 
 struct separation_edge_locator : dfs_visitor {
 
-	dual_tree dual_bfs_tree;
+	dual_tree *dual_bfs_tree;
 	int* dual_vertex_index_to_arc_index;	// one arc is sufficient to indentify a face
 	int* arc_index_to_dual_vertex_index;
 	bool* primal_tree_arc_marker;
@@ -19,19 +19,19 @@ struct separation_edge_locator : dfs_visitor {
 	bool is_separator_found = false;
 	std::vector<int>* separator_container;
 
-	separation_edge_locator(dual_tree const & arg_dual_tree, std::vector<int> *arg_separator_container) : dual_bfs_tree(arg_dual_tree), separator_container(arg_separator_container) {
-		arc_index_to_dual_vertex_index = dual_bfs_tree.arc_index_to_dual_vertex_index;
-		dual_vertex_index_to_arc_index = dual_bfs_tree.dual_vertex_index_to_arc_index;
-		primal_tree_arc_marker = dual_bfs_tree.primal_tree.tree_arc_marker;
+	separation_edge_locator(dual_tree *arg_dual_tree, std::vector<int> *arg_separator_container) : dual_bfs_tree(arg_dual_tree), separator_container(arg_separator_container) {
+		arc_index_to_dual_vertex_index = dual_bfs_tree->arc_index_to_dual_vertex_index;
+		dual_vertex_index_to_arc_index = dual_bfs_tree->dual_vertex_index_to_arc_index;
+		primal_tree_arc_marker = dual_bfs_tree->primal_tree->tree_arc_marker;
 
-		inside_count = new int[dual_bfs_tree.n];
-		is_visited = new bool[dual_bfs_tree.n];
-		for (int i = 0; i < dual_bfs_tree.n; i++) {
+		inside_count = new int[dual_bfs_tree->n];
+		is_visited = new bool[dual_bfs_tree->n];
+		for (int i = 0; i < dual_bfs_tree->n; i++) {
 			inside_count[i] = 0;
 			is_visited[i] = false;
 		}
-		cycles = new srlist<int>[dual_bfs_tree.n];
-		cycle_ptrs = new srlist<int>*[dual_bfs_tree.n];
+		cycles = new srlist<int>[dual_bfs_tree->n];
+		cycle_ptrs = new srlist<int>*[dual_bfs_tree->n];
 	};
 	void discover_vertex(vertex *u) {
 		//printf("Encounter %d for the first time\n", u->id);
@@ -161,7 +161,7 @@ struct separation_edge_locator : dfs_visitor {
 		//printf("inside count %d\n", inside_count[u->index]);
 		//printf("|c(e)| = %d\n", (*cycle_ptrs[u->index]).size());
 		is_visited[u->index] = true;
-		int ng = dual_bfs_tree.primal_tree.g.n;
+		int ng = dual_bfs_tree->primal_tree->g->n;
 		int param = (2 * ng) / 3;
 		if (inside_count[u->index] <= param && (ng - inside_count[u->index] - (*cycle_ptrs[u->index]).size()) <= param) {
 			// found a good separating edge
@@ -176,22 +176,22 @@ struct separation_edge_locator : dfs_visitor {
 
 };
 
-void find_low_radius_separator(dual_tree dual_bfs_tree) {
+void find_low_radius_separator(dual_tree *dual_bfs_tree) {
 	std::vector<int> separator_container;
 	separation_edge_locator edge_locator(dual_bfs_tree, &separator_container);
-	dfs(&dual_bfs_tree.vertices[0], dual_bfs_tree, edge_locator);
+	dfs(&(dual_bfs_tree->vertices[0]), *(dual_bfs_tree), edge_locator);
 }
 
-void find_low_radius_separator(planargraph &g, std::vector<int> &separator_container) {
-	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
-	bfs(&g.vertices[0], g, primal_bfs_tree);
+void find_low_radius_separator(planargraph *g, std::vector<int> &separator_container) {
+	bfs_tree primal_bfs_tree(g, &(g->vertices[0]));
+	bfs(&g->vertices[0], *g, primal_bfs_tree);
 	//primal_bfs_tree.print();
-	dual_tree dual_bfs_tree(primal_bfs_tree);
-	dual_tree_builder tree_buider(dual_bfs_tree);
+	dual_tree dual_bfs_tree(&primal_bfs_tree);
+	dual_tree_builder tree_buider(&dual_bfs_tree);
 	planar_face_traversal(g, tree_buider);
-	//dual_bfs_tree.print();
-	//dual_bfs_tree.print_dual_faces();
-	separation_edge_locator edge_locator(dual_bfs_tree, &separator_container);
+	//dual_bfs_tree->print();
+	//dual_bfs_tree->print_dual_faces();
+	separation_edge_locator edge_locator(&dual_bfs_tree, &separator_container);
 	// find a leaf of the dual tree to be the start vertex of dfs
 	int s = 0;
 	for (int i = 0; i < dual_bfs_tree.n; i++) {

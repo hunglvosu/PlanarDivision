@@ -12,18 +12,18 @@ struct face_traversal_visitor {
 };
 
 
-void planar_face_traversal(const planargraph &g, face_traversal_visitor &visitor) {
+void planar_face_traversal(planargraph *g, face_traversal_visitor &visitor) {
 	visitor.begin_traversal();
-	bool* arc_marker = new bool[g.m];
-	for (int i = 0; i < g.m; i++) arc_marker[i] = false;
+	bool* arc_marker = new bool[g->m];
+	for (int i = 0; i < g->m; i++) arc_marker[i] = false;
 	arc *current_arc;
 	int current_arc_index = 0;
 	vertex *source;
 	vertex *sink;
 	bool is_new_face = false;
 	int face_count = 0;
-	for (int i = 0; i < g.m; i++) {
-		current_arc = &g.arcs[i];
+	for (int i = 0; i < g->m; i++) {
+		current_arc = &g->arcs[i];
 		current_arc_index = current_arc->index;
 		if (!arc_marker[current_arc_index]) {
 			visitor.begin_face();
@@ -39,7 +39,7 @@ void planar_face_traversal(const planargraph &g, face_traversal_visitor &visitor
 			visitor.next_vertex(sink);
 			// update current arc
 			arc_marker[current_arc_index] = true;
-			if(current_arc->rev->prevarc->version <= g.current_version){	// if the arc to be visited is not a new arc, i.e, arc added during traversal
+			if(current_arc->rev->prevarc->version <= g->current_version){	// if the arc to be visited is not a new arc, i.e, arc added during traversal
 				current_arc = current_arc->rev->prevarc;
 				current_arc_index = current_arc->index;
 			}

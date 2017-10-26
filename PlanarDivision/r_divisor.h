@@ -162,9 +162,9 @@ void create_subplanargraph(planargraph &g_subgraph, graph_components &g_componen
 }
 
 void compute_r_division(planargraph &g, int r) {
-	planar_triangulate(g);
+	planar_triangulate(&g);
 	std::vector<int> separator_container;
-	find_low_radius_separator(g, separator_container);
+	find_low_radius_separator(&g, separator_container);
 	g.reset();
 	// find subgraphs of g after removing the separator
 	graph_components g_components;
@@ -191,7 +191,7 @@ void compute_r_division(planargraph &g, int r) {
 	// clear the separator container and reclaim the memory
 	//separator_container.clear();
 	//find_low_radius_separator(big_graph_lists.back(), separator_container);
-	while (!big_graph_lists.empty()) {
+/*	while (!big_graph_lists.empty()) {
 		printf("processsing a big graph\n");
 		planar_triangulate(big_graph_lists.back());
 		big_graph_lists.back().print();
@@ -227,7 +227,7 @@ void compute_r_division(planargraph &g, int r) {
 		//big_graph_lists.back().release();
 		big_graph_lists.pop_back();
 
-	}
+	}*/
 	/*while (!small_graph_lists.empty()) {
 		for (int i = 0; i < small_graph_lists.back().n; i++) {
 			printf("%d\t", small_graph_lists.back().vertices[i].id);

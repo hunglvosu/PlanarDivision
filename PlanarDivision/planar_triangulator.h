@@ -7,14 +7,14 @@
 struct  triangulator : face_traversal_visitor
 {
 
-	planargraph &g;
+	planargraph *g;
 	int num_arcs_store_in_g = 0;
 	arc *prev_arc0 = nullptr;
 	arc *prev_arc1 = nullptr;
 
 
-	triangulator(planargraph &arg_g) : g(arg_g) {
-		num_arcs_store_in_g = g.m;
+	triangulator(planargraph *arg_g) : g(arg_g) {
+		num_arcs_store_in_g = g->m;
 	};
 
 	void begin_traversal() {}
@@ -32,18 +32,18 @@ struct  triangulator : face_traversal_visitor
 				vertex *p = prev_arc0->sink;
 				vertex *q = prev_arc0->source;	
 				// add u->q  and q-> u arcs
-				g.arcs[num_arcs_store_in_g] = g.create_arc(u->index, q->index);
-				g.arcs[num_arcs_store_in_g + 1] = g.create_arc(q->index, u->index);
-				arc *uq = &g.arcs[num_arcs_store_in_g];
-				arc *qu = &g.arcs[num_arcs_store_in_g + 1];
+				g->arcs[num_arcs_store_in_g] = g->create_arc(u->index, q->index);
+				g->arcs[num_arcs_store_in_g + 1] = g->create_arc(q->index, u->index);
+				arc *uq = &g->arcs[num_arcs_store_in_g];
+				arc *qu = &g->arcs[num_arcs_store_in_g + 1];
 				uq->index = num_arcs_store_in_g;
 				uq->name = uq->index;
-				uq->version = g.current_version + 1;	// update the arc version
+				uq->version = g->current_version + 1;	// update the arc version
 				qu->index = num_arcs_store_in_g + 1;
 				qu->name = qu->index;
 				uq->rev = qu;
 				qu->rev = uq;
-				qu->version = g.current_version + 1;	// update the arc version
+				qu->version = g->current_version + 1;	// update the arc version
 				// update next and prev of prev 0
 				arc *next_of_prev0 = prev_arc0->nextarc;
 				prev_arc0->nextarc = qu;
@@ -79,9 +79,9 @@ struct  triangulator : face_traversal_visitor
 		arc *uv, *vu, *uy, *yv, *vx, *xu;
 		vertex *x, *y;
 		// recall for each new arc uv and vu are located consecutively on the array
-		for (int i = g.m; i < num_arcs_store_in_g ; i++) {
-			if (g.arc_map.find(g.arc_to_int64(g.arcs[i].source, g.arcs[i].sink))  != g.arc_map.end()) {
-				uv = &g.arcs[i];
+		for (int i = g->m; i < num_arcs_store_in_g ; i++) {
+			if (g->arc_map.find(g->arc_to_int64(g->arcs[i].source, g->arcs[i].sink))  != g->arc_map.end()) {
+				uv = &g->arcs[i];
 				vu = uv->rev;
 				vx = uv->rev->prevarc;
 				xu = vx->rev->prevarc;
@@ -111,20 +111,19 @@ struct  triangulator : face_traversal_visitor
 				uv->nextarc = vx->rev;
 				vx->rev->prevarc = uv;
 			}
-			g.arc_map.insert(arc_map_type::value_type(g.arc_to_int64(g.arcs[i].source, g.arcs[i].sink), i));
-			g.arcs[i].source->arclist.push_back(&g.arcs[i]);
-			printf("update neighbor of %d\n", g.arcs[i].source->index);
+			g->arc_map.insert(arc_map_type::value_type(g->arc_to_int64(g->arcs[i].source, g->arcs[i].sink), i));
+			g->arcs[i].source->arclist.push_back(&g->arcs[i]);
 		}
 		// update the neighbor list of new added arcs;
 		
-		g.m = num_arcs_store_in_g;
-		g.num_version++;
-		g.current_version++;		// update the graph version			
+		g->m = num_arcs_store_in_g;
+		g->num_version++;
+		g->current_version++;		// update the graph version			
 	}
 
 };
 
-void planar_triangulate(planargraph &g){
+void planar_triangulate(planargraph *g){
 	triangulator trg(g);
 	planar_face_traversal(g, trg);
 }

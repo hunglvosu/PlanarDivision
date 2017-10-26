@@ -2,7 +2,7 @@
 #include "low_radius_separator.h"
 
 void find_separator(planargraph &g, std::vector<int> &separator_container) {
-	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
+	bfs_tree primal_bfs_tree(&g, &g.vertices[0]);
 	bfs(&g.vertices[0], g, primal_bfs_tree);
 	int sqrt_n = ((int)sqrt(g.n));
 	// Find a median level i such that L[0] + ... + L[i-1] <= n/2 and L[0]+...+ L[i] > n/2
@@ -18,7 +18,7 @@ void find_separator(planargraph &g, std::vector<int> &separator_container) {
 		maxLevel = (maxLevel < primal_bfs_tree.levels[i]) ? primal_bfs_tree.levels[i] : maxLevel;
 	}
 	if (maxLevel <= (int)sqrt(2 * g.n)) {
-		find_low_radius_separator(g, separator_container);
+		find_low_radius_separator(&g, separator_container);
 	}
 	else {
 		int Li = 0;	// Li = L[0] +... + L[i]
