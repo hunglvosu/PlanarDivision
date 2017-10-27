@@ -59,7 +59,7 @@ struct sample_bfs_visitor : bfs_visitor {
 };
 struct sample_face_visitor : face_traversal_visitor {
 	void begin_traversal() {
-		printf("Begin face traversal\n");
+		//printf("Begin face traversal\n");
 	}
 	void begin_face() {
 		//printf("Traverse a new face\n");
@@ -76,7 +76,7 @@ struct sample_face_visitor : face_traversal_visitor {
 		//printf("End traversing a face\n");
 	}
 	void end_traversal() {
-		printf("End face traversal\n");
+		//printf("End face traversal\n");
 	}
 
 };
@@ -224,25 +224,25 @@ vector<vector<int>> create_planar_path(int n) {
 
 void benchmarking() {
 	time_t begin, end;
-	printf("creating the embedding");
+	cout<<"creating the embedding"<<endl;
 	time(&begin);
 	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(1000);
 	time(&end);
 	double difference = difftime(end, begin);
-	printf("time taken for creating 1 mil vertices %.2lf seconds.\n", difference);
-	printf("reading the embedding");
+	cout << "time taken for creating 1 mil vertices" << difference << " seconds." << endl;
+	cout << "reading the embedding" << endl;
 	time(&begin);
 	planargraph g(1000000, embedding);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken for reading the planar embedding of 1 mil vertices %.2lf seconds.\n", difference);
-	printf("reading complete");
+	cout << "time taken for reading the planar embedding of 1 mil vertices " << difference << " seconds." << endl;
+	cout << "reading complete" << endl;
 	sample_face_visitor face_visitor;
 	time(&begin);
 	planar_face_traversal(&g, face_visitor);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken for visiting all faces %.2lf seconds.\n", difference);
+	cout << "time taken for visiting all faces " << difference << " seconds." << endl;
 
 	time(&begin);
 	int arc_index;
@@ -251,35 +251,35 @@ void benchmarking() {
 	}
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken to read arc_map %.2lf seconds.\n", difference);
+	cout << "time taken to read arc_map" << difference << " seconds." << endl;
 
 
 	time(&begin);
 	planar_triangulate(&g);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken to triangulate 1 mil g %.2lf seconds.\n", difference);
+	cout << "time taken to triangulate 1 mil g " << difference << " seconds." << endl;
 
 	time(&begin);
 	sample_bfs_visitor bfs_vis;
 	bfs(&g.vertices[0], g, bfs_vis);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken to bfs 1 mil g %.2lf seconds.\n", difference);
+	cout << "time taken to bfs 1 mil g " << difference << " seconds." << endl;
 
 	time(&begin);
 	sample_dfs_visitor dfs_vis;
 	dfs(&g.vertices[0], g, dfs_vis);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken to dfs 1 mil g %.2lf seconds.\n", difference);
+	cout << "time taken to dfs 1 mil g " << difference << " seconds." << endl;
 
 	/*time(&begin);
 	bfs_tree primal_bfs_tree(g, &g.vertices[0]);
 	bfs(&g.vertices[0], g, primal_bfs_tree);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken to build a primal bfs tree of mil g %.2lf seconds.\n", difference);
+	cout<<"time taken to build a primal bfs tree of mil g" << difference << " seconds." << endl;
 
 	time(&begin);
 	dual_tree dual_bfs_tree(primal_bfs_tree);
@@ -287,21 +287,21 @@ void benchmarking() {
 	planar_face_traversal(g, tree_buider);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken to build a dual bfs tree of mil g %.2lf seconds.\n", difference);*/
+	cout<<"time taken to build a dual bfs tree of mil g " << difference << " seconds." << endl;*/
 
 	time(&begin);
 	std::vector<int> separator_container;
 	find_low_radius_separator(&g, &g.vertices[0], separator_container);
 	time(&end);
 	difference = difftime(end, begin);
-	printf("time taken to find a separator of mil g %.2lf seconds.\n", difference);
+	cout << "time taken to find a separator of mil g " << difference << " seconds." << endl;
 
 }
 
 void r_division_of_grid(planargraph &g, int n, int r) {
-	printf("********************************************\n");
-	printf("testing division quality %d-division of of %dx%d grid\n", r, n, n);
-	printf("********************************************\n");
+	cout << "********************************************" << endl;
+		cout << "testing division quality" << r << "-division of " << n << "x" << n << " grid" << endl;
+	cout << "********************************************" << endl;
 	//	r_division_by_lowradius_separator(g, r);
 	r_division(g, r);
 }
@@ -316,9 +316,9 @@ void r_division_quality_test() {
 	r_division_of_grid(g, 100, 100);
 }
 void print_separator(std::vector<int> &vec) {
-	printf("Separator size %ld\n", vec.size());
+	cout << "Separator size" << vec.size() << endl;
 	for (int i = 0; i < vec.size(); i++) {
-		printf("%d\t", vec[i]);
+		cout << vec[i] << "\t" << endl;
 	}
-	printf("\n");
+	cout << endl;
 }

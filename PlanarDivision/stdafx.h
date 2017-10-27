@@ -6,7 +6,6 @@
 #pragma once
 
 #include "targetver.h"
-//#include <stdio.h>
 #include <tchar.h>
 #include <time.h>
 #include <string.h>
@@ -20,5 +19,7 @@
 #include <utility>
 #include <memory>
 #include<array>
-
+#include <list>
+#include <stdio.h>
+#include <math.h>
 // TODO: reference additional headers your program requires here
