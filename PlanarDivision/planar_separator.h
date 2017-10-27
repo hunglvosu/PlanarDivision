@@ -172,45 +172,103 @@ void subplanargraph_by_contracting_l0(planargraph &g, planargraph &g_subgraph, i
 	g_subgraph.vertices[current_vertex_index].index = current_vertex_index;
 	// finish updating the vertex set
 	// update arcs of the planar subgraph
-	vertex *source, *sink;
-	vertex *subgraph_source, *subgraph_sink;
 	current_arc_index = 0;
+	// we need to process an arc and its rev of the original graph g at the same time
+	// we use mark field to check whether it is process or not
+	vertex *u, *v;
+	vertex *subgraph_u, *subgraph_v;// the corresponding version of u and v in its subgraphs
+	arc *uv, *vu;
 	for (int i = 0; i < g.m; i++) {
-		source = g.arcs[i].source;
-		sink = g.arcs[i].sink;
-		if (levels[source->index] > l0 || levels[sink->index] > l0) {
-			subgraph_source = &g_subgraph.vertices[source->name];
-			subgraph_sink = &g_subgraph.vertices[sink->name];
-			// arc u->v must have at least one endpoint of level > l0
-			// since otherwise u->v is a contracted arc. 
-			if (g_subgraph.arc_map.find(g.arc_to_int64(subgraph_source, subgraph_sink)) == g_subgraph.arc_map.end()) {
-				g_subgraph.add_arc_to_map(subgraph_source, subgraph_sink, current_arc_index);
-				g.arcs[i].name = current_arc_index;
-
-				g_subgraph.arcs[current_arc_index].source = subgraph_source;
-				g_subgraph.arcs[current_arc_index].sink = subgraph_sink;
+		uv = &g.arcs[i];
+		if (g.arcs[i].mark == true) continue;
+		u  = uv->source;
+		v = uv->sink;
+		if (levels[u->index] > l0 || levels[v->index] > l0) {
+			subgraph_u = &g_subgraph.vertices[u->name];
+			subgraph_v = &g_subgraph.vertices[v->name];
+			vu = uv->rev;
+			uv->mark = true;
+			vu->mark = true;
+			// the only possibe case that have parallel arc is subgraph_u or subgraph_v is the contracted vertex
+			if (g_subgraph.arc_map.find(g.arc_to_int64(subgraph_u, subgraph_v)) == g_subgraph.arc_map.end()) {
+				uv->name = current_arc_index;
+				vu->name = current_arc_index + 1;
+				// update arc u->v of the subgraph 
+				g_subgraph.arcs[current_arc_index].source = subgraph_u;
+				g_subgraph.arcs[current_arc_index].sink = subgraph_v;
 				g_subgraph.arcs[current_arc_index].version = 0;
 				g_subgraph.arcs[current_arc_index].mark = false;
 				g_subgraph.arcs[current_arc_index].index = current_arc_index;
-				g_subgraph.arcs[current_arc_index].name = current_arc_index;
-				subgraph_source->arclist.push_back(&g_subgraph.arcs[current_arc_index]);
+				g_subgraph.arcs[current_arc_index].name = i;
+				subgraph_u->arclist.push_back(&g_subgraph.arcs[current_arc_index]);
+				g.arcs[i].name = current_arc_index;
 				current_arc_index++;
+				// update arc v->u of the subgraph 
+				g_subgraph.arcs[current_arc_index].source = subgraph_v;
+				g_subgraph.arcs[current_arc_index].sink = subgraph_u;
+				g_subgraph.arcs[current_arc_index].version = 0;
+				g_subgraph.arcs[current_arc_index].mark = false;
+				g_subgraph.arcs[current_arc_index].index = current_arc_index;
+				g_subgraph.arcs[current_arc_index].name = vu->index;
+				subgraph_v->arclist.push_back(&g_subgraph.arcs[current_arc_index]);
+				g.arcs[i].rev->name = current_arc_index;
+				// update the rev pointer of u->v and v->u
+				g_subgraph.arcs[current_arc_index].rev = &g_subgraph.arcs[current_arc_index - 1];
+				g_subgraph.arcs[current_arc_index - 1].rev = &g_subgraph.arcs[current_arc_index];
+				current_arc_index++;
+				// u or v in the subgraph is the contracted vertex
+				if (subgraph_u->index == g_subgraph.n - 1 || subgraph_v->index == g_subgraph.n - 1) {
+					g_subgraph.add_arc_to_map(subgraph_u, subgraph_v, current_arc_index - 2);
+					g_subgraph.add_arc_to_map(subgraph_v, subgraph_u, current_arc_index - 1);
+				}
 			}
 			else {
-				g.arcs[i].name = -2;	// undefined name
+				g.arcs[i].name = -3;	// we mark this arc differently because it is deleted
+				g.arcs[i].rev->name = -3;
 			}
 		}
 		else {
-			g.arcs[i].name = -2;	// undefined name
+			// uv is a contracted edge
+			g.arcs[i].name = -2;
+			g.arcs[i].rev->name = -2;
 		}
-	}// end loop through arcs of g
-	g_subgraph.m = current_arc_index;
-	// update the rotational system
-	for (int i = 0; i < g_subgraph.m; i++) {
-		
 	}
+	for (int i = 0; i < g.m; i++) g.arcs[i].mark = false;
+	g_subgraph.m = current_arc_index;
+
+	// update the rotational system
+	arc *nextarc, *prevarc;
+	for (int i = 0; i < g_subgraph.m; i++) {
+		nextarc = g.arcs[g_subgraph.arcs[i].name].nextarc;
+		while (nextarc->name <= - 2){
+			if (nextarc->name == -3) {
+				// the arc is deleted
+				// jump to the next arc in the same rotational system around the soure
+				nextarc = nextarc->nextarc;
+			}
+			else {
+				// the arc is contracted
+				// jump to the next arc in the same face
+				nextarc = nextarc->rev->prevarc;
+			}
+			
+		}
+		g_subgraph.arcs[i].nextarc = &g_subgraph.arcs[nextarc->name];
+		prevarc = g.arcs[g_subgraph.arcs[i].name].prevarc;
+		while (prevarc->name <= -2) {
+			if (prevarc->name == -3) {
+				prevarc = prevarc->prevarc;
+			}
+			else {
+				prevarc = prevarc->rev->prevarc;
+			}
+		}
+		g_subgraph.arcs[i].prevarc = &g_subgraph.arcs[prevarc->name];
+	}
+
 	printf("#arcs = %d\n", g_subgraph.m);
-	g_subgraph.print();
+//	g_subgraph.print();
+//	g_subgraph.check_rotational_system();
 }
 void find_separator(planargraph &g, std::vector<int> &separator_container) {
 	bfs_tree primal_bfs_tree(&g, &g.vertices[0]);
