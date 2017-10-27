@@ -1,6 +1,5 @@
 #pragma once
-#include<iostream>
-#include<array>
+#include "stdafx.h"
 /**
 * 
 * A simply reversible list that supports reverse operation and splice operation both in O(1) time

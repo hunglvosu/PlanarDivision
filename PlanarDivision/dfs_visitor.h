@@ -1,7 +1,5 @@
 #pragma once
 #include "planargraph.h"
-#include <stack>
-#include <utility>
 // we adopt visitor class definition of boost
 // see http://www.boost.org/doc/libs/1_65_1/libs/graph/doc/DFSVisitor.html for more details
 

@@ -175,9 +175,9 @@ void find_low_radius_separator(dual_tree *dual_bfs_tree) {
 }
 
 // return the size of the separator
-void find_low_radius_separator(planargraph *g, std::vector<int> &separator_container) {
-	bfs_tree primal_bfs_tree(g, &(g->vertices[0]));
-	bfs(&g->vertices[0], *g, primal_bfs_tree);
+void find_low_radius_separator(planargraph *g, vertex *source, std::vector<int> &separator_container) {
+	bfs_tree primal_bfs_tree(g, source);
+	bfs(source, *g, primal_bfs_tree);
 	//primal_bfs_tree.print();
 	dual_tree dual_bfs_tree(&primal_bfs_tree);
 	dual_tree_builder tree_buider(&dual_bfs_tree);

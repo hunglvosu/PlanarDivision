@@ -1,6 +1,5 @@
 #pragma once
 #include "planargraph.h"
-#include <queue>
 
 // we adopt visitor class definition of boost
 // see http://www.boost.org/doc/libs/1_46_1/libs/graph/doc/BFSVisitor.html for more details

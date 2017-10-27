@@ -1,5 +1,6 @@
 #pragma once
 #include "low_radius_separator.h"
+#include "planar_triangulator.h"
 
 typedef std::vector<vertex*> vertex_container;
 typedef std::vector<arc*> arc_container;
@@ -96,75 +97,27 @@ struct graph_components : separator_bfs_visitor {
 
 };
 
-void subplanargraph_by_contracting_l0(planargraph &g_subgraph, int *levels, int l0, graph_components &g_components, int comp_id) {
-	for (int i = 0; i < g_subgraph.n; i++) {
-		g_subgraph.vertices[i].id = g_components.vertices_of_components[comp_id][i]->id;	// recall id never change
-		g_components.vertices_of_components[comp_id][i]->name = i; // update the name of the corresponding vertex to update arcs later on
-		g_subgraph.vertices[i].index = i;
-	}
-	// update arcs of the planar subgraph
-	vertex *source, *sink;
-	for (int i = 0; i < g_subgraph.m; i++) {
-		// change the name of the graph to point to the index of the corresponding arc in the subgraph
-		// this will help in updating the rotational system of the subgraph
-		g_components.arcs_of_components[comp_id][i]->name = i;
-		source = &g_subgraph.vertices[g_components.arcs_of_components[comp_id][i]->source->name];
-		sink = &g_subgraph.vertices[g_components.arcs_of_components[comp_id][i]->sink->name];
-		g_subgraph.arcs[i].source = source;
-		g_subgraph.arcs[i].sink = sink;
-		g_subgraph.arcs[i].version = 0;
-		g_subgraph.arcs[i].mark = false;
-		g_subgraph.arcs[i].index = i;
-		g_subgraph.arcs[i].name = i;
-		source->arclist.push_back(&g_subgraph.arcs[i]);
-	}
-	//g_subgraph.print();
-	// update the nextarc, prevarc and rev pointers
-	arc *nextarc, *prevarc;
-	int source_comp_id = -1;
-	int sink_comp_id = -1;
-	for (int i = 0; i < g_subgraph.m; i++) {
-		g_subgraph.arcs[i].rev = &g_subgraph.arcs[g_components.arcs_of_components[comp_id][i]->rev->name];
-		nextarc = g_components.arcs_of_components[comp_id][i];
-		// recall that source and/or sink of nextarc could be in the separator
-		do {
-			nextarc = nextarc->nextarc;
-			source_comp_id = g_components.vertex_to_comp_id[nextarc->source->index];
-			sink_comp_id = g_components.vertex_to_comp_id[nextarc->sink->index];
-		} while (source_comp_id < 0 || sink_comp_id < 0);
-		g_subgraph.arcs[i].nextarc = &g_subgraph.arcs[nextarc->name];
 
-		prevarc = g_components.arcs_of_components[comp_id][i];
-		do {
-			prevarc = prevarc->prevarc;
-			source_comp_id = g_components.vertex_to_comp_id[prevarc->source->index];
-			sink_comp_id = g_components.vertex_to_comp_id[prevarc->sink->index];
-		} while (source_comp_id < 0 || sink_comp_id < 0);
-		g_subgraph.arcs[i].prevarc = &g_subgraph.arcs[prevarc->name];
-	}
-	//g_subgraph.check_rotational_system();
-	//printf("*****************vertex map*****************\n");
-	//for (int i = 0; i < g_components.vertices_of_components[comp_id].size(); i++) {
-	//	printf("%d = %d\n", g_components.vertices_of_components[comp_id][i]->id, g_components.vertices_of_components[comp_id][i]->name);
-	//}
-}
-void subplanargraph_by_contracting_l0(planargraph &g, planargraph &g_subgraph, int *levels, int l0) {
+void subplanargraph_by_contracting_l0_and_removing_l2(planargraph &g, planargraph &g_subgraph, int *levels, int l0, int l2) {
 	int current_arc_index = 0;
 	int current_vertex_index = 0;
 	// update the set of vertices of the subgraph
 	for (int i = 0; i < g.n; i++) {
-		// vertices of levels at most l0 are contracted
-		if (levels[i] > l0) {
+		if (levels[i] <= l0) {
+			// contracted vertices point to the corresponding vertex in the subgraph
+			g.vertices[i].name = g_subgraph.n - 1;
+		}
+		else if (levels[i] >= l2){
+			// removed vertices have name -1
+			g.vertices[i].name = -1;
+		}
+		else {
 			// recall id never change
-			g_subgraph.vertices[current_vertex_index].id = g.vertices[i].id;	
-  		    // update the name of the corresponding vertex to update arcs later on
+			g_subgraph.vertices[current_vertex_index].id = g.vertices[i].id;
+			// update the name of the corresponding vertex to update arcs later on
 			g.vertices[i].name = current_vertex_index;
 			g_subgraph.vertices[current_vertex_index].index = current_vertex_index;
 			current_vertex_index++;
-		}
-		else {
-			// all vertices of level less than l0 is pointed to the contracted vertex of the subgraph
-			g.vertices[i].name = g_subgraph.n-1; 
 		}
 	}
 	
@@ -183,12 +136,14 @@ void subplanargraph_by_contracting_l0(planargraph &g, planargraph &g_subgraph, i
 		if (g.arcs[i].mark == true) continue;
 		u  = uv->source;
 		v = uv->sink;
-		if (levels[u->index] > l0 || levels[v->index] > l0) {
+		if (levels[u->index] >= l2 || levels[v->index] >= l2) {
+			// u and/or v are deleted
+			g.arcs[i].name = -3;	
+			g.arcs[i].rev->name = -3;
+		}else if (levels[u->index] > l0 || levels[v->index] > l0) {
 			subgraph_u = &g_subgraph.vertices[u->name];
 			subgraph_v = &g_subgraph.vertices[v->name];
 			vu = uv->rev;
-			uv->mark = true;
-			vu->mark = true;
 			// the only possibe case that have parallel arc is subgraph_u or subgraph_v is the contracted vertex
 			if (g_subgraph.arc_map.find(g.arc_to_int64(subgraph_u, subgraph_v)) == g_subgraph.arc_map.end()) {
 				uv->name = current_arc_index;
@@ -232,6 +187,8 @@ void subplanargraph_by_contracting_l0(planargraph &g, planargraph &g_subgraph, i
 			g.arcs[i].name = -2;
 			g.arcs[i].rev->name = -2;
 		}
+		uv->mark = true;
+		uv->rev->mark = true;
 	}
 	for (int i = 0; i < g.m; i++) g.arcs[i].mark = false;
 	g_subgraph.m = current_arc_index;
@@ -266,9 +223,9 @@ void subplanargraph_by_contracting_l0(planargraph &g, planargraph &g_subgraph, i
 		g_subgraph.arcs[i].prevarc = &g_subgraph.arcs[prevarc->name];
 	}
 
-	printf("#arcs = %d\n", g_subgraph.m);
-//	g_subgraph.print();
-//	g_subgraph.check_rotational_system();
+	//printf("#arcs = %d\n", g_subgraph.m);
+	//g_subgraph.print();
+	//g_subgraph.check_rotational_system();
 }
 void find_separator(planargraph &g, std::vector<int> &separator_container) {
 	bfs_tree primal_bfs_tree(&g, &g.vertices[0]);
@@ -286,10 +243,6 @@ void find_separator(planargraph &g, std::vector<int> &separator_container) {
 		L[primal_bfs_tree.levels[i]] ++;
 		maxLevel = (maxLevel < primal_bfs_tree.levels[i]) ? primal_bfs_tree.levels[i] : maxLevel;
 	}
-	/*if (maxLevel <= (int)sqrt(2 * g.n)) {
-		find_low_radius_separator(&g, separator_container);
-		return;
-	}
 	int Li = 0;	// Li = L[0] +... + L[i]
 	int half_n = g.n / 2;
 	int med_level = 0;
@@ -302,15 +255,23 @@ void find_separator(planargraph &g, std::vector<int> &separator_container) {
 			break;
 		}
 	}
-	std::cout << "Median level: " << med_level << std::endl;
+	//std::cout << "Median level: " << med_level << std::endl;
 	if (L[med_level] <= 2 * sqrt_n) {
 		// found a separator
+		//printf("middle layer is a good separator\n");
 		for (int i = 0; i < g.n; i++) {
 			if (primal_bfs_tree.levels[i] == med_level) {
 				separator_container.push_back(i);
-				return;
 			}
 		}
+		return;
+	}
+	if (maxLevel <= (int)sqrt(2 * g.n)) {
+		//printf("the input graph has small diameter\n");
+		planar_triangulate(&g);
+		find_low_radius_separator(&g, &g.vertices[0], separator_container);
+		g.reset();
+		return;
 	}
 	int k = Li + L[med_level];
 	int two_sqrt_k = (int)(2 * sqrt(k));
@@ -325,7 +286,7 @@ void find_separator(planargraph &g, std::vector<int> &separator_container) {
 		if (L[l2] + 2 * (l2 - med_level - 1) <= two_sqrt_n_k) break;
 		l2--;
 	}
-	std::cout << "l0 = " << l0 << "\t l2= " << l2 << std::endl;
+	//std::cout << "l0 = " << l0 << "\t l2= " << l2 << std::endl;
 	// push vertices of l0 and l2 to the separator
 	//std::vector<int> temp_sep;
 	for (int i = 0; i <= g.n; i++) {
@@ -338,17 +299,32 @@ void find_separator(planargraph &g, std::vector<int> &separator_container) {
 	for (int i = l0 + 1; i < l2; i++) {
 		middle_part_size += L[i];
 	}
-	if (middle_part_size <= (2 * g.n) / 3) return;*/
-	
-	int l0 = 1;
-
-	int L0 = 0;	// the # of vertices of level <= l0
-	for (int i = 0; i <= l0; i++) {
-		L0 += L[i];
+	if (middle_part_size <= (2 * g.n) / 3) {
+		//printf("l0 + l2 is a good separator\n");
+		return;
 	}
-	printf("L0 = %d\n", L0);
-	planargraph contracted_graph((g.n - L0)+1, 6 *((g.n - L0) + 1)-12);
-	subplanargraph_by_contracting_l0(g, contracted_graph, primal_bfs_tree.levels, l0);
+	int L02 = 0;	// the # of vertices of level <= l0 and >= l2
+	for (int i = 0; i <= l0; i++) {
+		L02 += L[i];
+	}
+	//printf("L02 = %d\n", L02);
+	for (int i = l2; i <= maxLevel; i++) {
+		L02 += L[i];
+	}
+	//printf("L0 = %d\n", L02);
 	// contract vertices of l1 into a new vertex and delete vertices of l2 
-
+	planargraph contracted_graph((g.n - L02)+1, 6 *((g.n - L02) + 1)-12);
+	subplanargraph_by_contracting_l0_and_removing_l2(g, contracted_graph, primal_bfs_tree.levels, l0, l2);
+	planar_triangulate(&contracted_graph);
+	std::vector<int> middle_separator;
+	find_low_radius_separator(&contracted_graph, &contracted_graph.vertices[contracted_graph.n-1], middle_separator);
+	int vertex_id = -1;
+	for (int i = 0; i < middle_separator.size(); i++) {
+		vertex_id = contracted_graph.vertices[middle_separator[i]].id;
+		// the contracted vertex has negative id
+		if(vertex_id  >= 0) {
+			separator_container.push_back(contracted_graph.vertices[middle_separator[i]].id);
+		}
+	}
+	//printf("separator by 3 sets\n");
 }

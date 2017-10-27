@@ -1,8 +1,6 @@
 #pragma once
 #include "planargraph.h"
 #include "planar_face_visitor.h"
-#include <iostream>
-#include <vector>
 
 struct  triangulator : face_traversal_visitor
 {

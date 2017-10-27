@@ -1,9 +1,5 @@
 #pragma once
-#include<iostream>
-#include <vector>
-#include<map>
-#include<stdio.h>
-#include <unordered_map>
+#include "stdafx.h"
 
 typedef struct vertex vertex;
 typedef struct arc arc;

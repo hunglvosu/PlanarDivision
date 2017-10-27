@@ -1,6 +1,5 @@
 #pragma once
 #include "planargraph.h"
-#include <memory>
 struct face_traversal_visitor {
 
 	virtual void begin_traversal() {};
