@@ -1,40 +1,54 @@
-========================================================================
-    CONSOLE APPLICATION : PlanarDivision Project Overview
-========================================================================
+/********************************************************************
+Copyright 2017 Hung Le
 
-AppWizard has created this PlanarDivision application for you.
+ ********************************************************************/
 
-This file contains a summary of what you will find in each of the files that
-make up your PlanarDivision application.
+Overview
+========
+Compute r-division of a planar graph where parameter r is the maximum size of any region
+The program takes a planar embedding (rotational system) of the input graph and output the r-division of the graph
+The embedding file has format as in the output of John M. Boyer's implementation of Boyer-Myrvold planar embedding
+The planar embedding implementation of Boyer can be found at http://jgaa.info/accepted/2004/BoyerMyrvold2004.8.3/planarity.zip. 
+Note that in the rotational system of the output, neighbors of each vertex are ordered counter-clockwise while our planar representation is clockwise.
 
+Usage
+======================
+The program is written in Visual C+++ (Visual Studio 2015) and an exe file (named PlanarDivision.exe) is created in release mode (x86).
+A sample format of the command line is:
+	PlanarDivision.exe input.txt output.txt 5
+where "input.txt" is the input planar embedding file (output of Boyer's program) and "output.txt" is the output r-division. The last number is the value of r (in this case is 5).
 
-PlanarDivision.vcxproj
-    This is the main project file for VC++ projects generated using an Application Wizard.
-    It contains information about the version of Visual C++ that generated the file, and
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
+Output Format
+======================
 
-PlanarDivision.vcxproj.filters
-    This is the filters file for VC++ projects generated using an Application Wizard. 
-    It contains information about the association between the files in your project 
-    and the filters. This association is used in the IDE to show grouping of files with
-    similar extensions under a specific node (for e.g. ".cpp" files are associated with the
-    "Source Files" filter).
+The output file has the following sample format:
 
-PlanarDivision.cpp
-    This is the main application source file.
+#0
+N=3
+2 4 6
+#1
+N=3 M=4
+5: 8
+7: 8
+8: 7 5
+#2
+N=3 M=4
+0: 1 3
+1: 0
+3: 0
 
-/////////////////////////////////////////////////////////////////////////////
-Other standard files:
+The output above is obtained by applying r-division to a 3x3 grid (vertices are numberred from 0-9 row-by-row) with r = 3
+where #0 is preserved for the id of the boundary in r-division. Next line is the number of vertices in the boundary and the third line contains vertices in the boundary.
 
-StdAfx.h, StdAfx.cpp
-    These files are used to build a precompiled header (PCH) file
-    named PlanarDivision.pch and a precompiled types file named StdAfx.obj.
+Each #i corresponds to a region in r-division, with N and M is the number of vertices and edges inside the region.
+Next lines are rotational system representation of each region such that each line has:
+	_ The first number is the id of the vertex
+	_ The following numbers are neighbors of the vertex in the rotational system (clockwise order) 
 
-/////////////////////////////////////////////////////////////////////////////
-Other notes:
+There are cases when each region consist of only 1 vertex. In the output file, it would have the following sample format:
 
-AppWizard uses "TODO:" comments to indicate parts of the source code you
-should add to or customize.
+#4
+N=1 M=0
+9:
 
-/////////////////////////////////////////////////////////////////////////////
+The above sample is a region of a single vertex (id = 5) and has no edge. 
