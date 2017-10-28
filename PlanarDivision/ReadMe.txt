@@ -40,7 +40,7 @@ N=3 M=4
 The output above is obtained by applying r-division to a 3x3 grid (vertices are numberred from 0-9 row-by-row) with r = 3
 where #0 is preserved for the id of the boundary in r-division. Next line is the number of vertices in the boundary and the third line contains vertices in the boundary.
 
-Each #i corresponds to a region in r-division, with N and M is the number of vertices and edges inside the region.
+Each #i corresponds to a region in r-division, with N and M is the number of vertices and arcs inside the region. Remember #-arcs = 2 * #-of-edges so M is always even.
 Next lines are rotational system representation of each region such that each line has:
 	_ The first number is the id of the vertex
 	_ The following numbers are neighbors of the vertex in the rotational system (clockwise order) 
