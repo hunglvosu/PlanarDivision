@@ -87,6 +87,7 @@ struct planargraph : graph {
 	void init_arc_map();
 	void add_arc_to_map(vertex *source, vertex *sink, int uv_arc_index);
 	std::vector<std::vector<int>> get_embedding();
+	void write_to_file(std::ofstream &out_stream);
 };
 
 planargraph::planargraph(){
@@ -232,6 +233,24 @@ std::vector<std::vector<int>> planargraph::get_embedding() {
 	return embedding_storage;
 }
 
+void planargraph::write_to_file(std::ofstream &out_stream) {
+	for (int i = 0; i < n; i++) {
+//		printf("%d:\t", i);
+		arc *arc_it = vertices[i].arclist.front();
+		out_stream << vertices[i].id << ":";
+		while (arc_it->mark != true) {
+//			printf("%d\t", arc_it->sink->index);
+			out_stream << " " << arc_it->sink->id;
+			arc_it->mark = true;
+			arc_it = arc_it->nextarc;
+		}
+		//printf("\n");
+		out_stream << std::endl;
+	}
+	for (int i = 0; i < m; i++) {
+		arcs[i].mark = false;
+	}
+}
 void graph::create_arc_indices() {
 	for (int i = 0; i <m; i++) {
 		arcs[i].index = i;
@@ -293,6 +312,7 @@ void graph::reset_arc_marks() {
 		arcs[i].mark = false;
 	}
 }
+
 
 void graph::print_arc(arc *a) {
 	printf("%d->%d\n", a->source->index, a->sink->index);

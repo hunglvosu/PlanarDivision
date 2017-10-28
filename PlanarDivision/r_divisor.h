@@ -136,13 +136,13 @@ void r_division_by_lowradius_separator(planargraph &g, int r) {
 	printf("Separation at %d quality = %lf\n", r, 1.0 - (double)boundary_vertices.size()/g.n);
 }
 
-void r_division(planargraph &g, int r){
+void r_division(planargraph &g, int r, std::vector<int> &boundary_vertices, std::list<planargraph> &small_graph_lists){
 	printf("Start %d-division\n",r);
 	time_t begin, end;
 	time(&begin);
 	int sep_count = 0;
 
-	std::vector<int> boundary_vertices;
+	//std::vector<int> boundary_vertices;
 	std::vector<int> separator_container;
 	find_separator(g,separator_container);
 	boundary_vertices.insert(boundary_vertices.end(), separator_container.begin(), separator_container.end());
@@ -153,7 +153,7 @@ void r_division(planargraph &g, int r){
 	g_components.init(&g);
 	separtor_bfs(g, g_components, separator_container);
 	std::list<planargraph> big_graph_lists;	// list of subgraphs that have more than r vertices
-	std::list<planargraph> small_graph_lists;// list of subgraphs that have at most r vertices
+	//std::list<planargraph> small_graph_lists;// list of subgraphs that have at most r vertices
 	for (int comp_id = 0; comp_id < g_components.num_components; comp_id++) {
 		if (g_components.vertices_of_components[comp_id].size() > r) {
 			// the component is big
@@ -206,3 +206,8 @@ void r_division(planargraph &g, int r){
 	printf("Total time for r-division is  %.2lf seconds.\n", difference);
 }
 
+void r_division(planargraph &g, int r) {
+	std::vector<int> boundary_vertices;
+	std::list<planargraph> small_graph_lists;
+	r_division(g, r, boundary_vertices, small_graph_lists);
+}
