@@ -31,7 +31,6 @@ void read_embedding_from_file(char *filename, std::vector<std::vector<int>> &emb
 	time_t begin, end;
 	time(&begin);
 	char buf[1000000];
-//	std::ifstream infile(filename);
 	std::ifstream infile;
 	infile.rdbuf()->pubsetbuf(buf, sizeof buf);
 	infile.open(filename);
@@ -70,6 +69,7 @@ void write_output(std::vector<int> &boundary_vertices, std::list<planargraph> &s
 	std::ofstream outputfile(outputfilename);
 	// write the separator
 	outputfile << "#0" << std::endl;
+	outputfile << "N=" << boundary_vertices.size() << std::endl;
 	for (int i = 0; i < boundary_vertices.size()-1; i++) {
 		outputfile << boundary_vertices[i] << " ";
 	}
@@ -77,6 +77,7 @@ void write_output(std::vector<int> &boundary_vertices, std::list<planargraph> &s
 	int i = 1;
 	while (!small_graph_lists.empty()) {
 		outputfile << "#" << i << std::endl;
+		outputfile << "N=" << small_graph_lists.back().n << " M=" << small_graph_lists.back().m << std::endl;
 		small_graph_lists.back().write_to_file(outputfile);
 		small_graph_lists.pop_back();
 		i++;
@@ -86,4 +87,11 @@ void write_output(std::vector<int> &boundary_vertices, std::list<planargraph> &s
 	double difference = difftime(end, begin);
 	std::cout << "Total time for writing output is " << difference << " seconds." << std::endl;
 	// write component
+}
+void print_separator(std::vector<int> &vec) {
+	std::cout << "Separator size" << vec.size() << std::endl;
+	for (int i = 0; i < vec.size(); i++) {
+		std::cout << vec[i] << "\t" << std::endl;
+	}
+	std::cout << std::endl;
 }

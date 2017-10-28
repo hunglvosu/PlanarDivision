@@ -19,8 +19,6 @@ int main(int argc, char *argv[]) {
 	read_embedding_from_file(argv[1], embedding_storage);
 	int r = std::stoi(argv[3]);
 	planargraph g(embedding_storage.size(), embedding_storage);
-//	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(4);
-//	planargraph g(4*4, embedding);
 	std::vector<int> boundary_vertices;
 	std::list<planargraph> small_graph_lists;
 	r_division(g, r, boundary_vertices, small_graph_lists);

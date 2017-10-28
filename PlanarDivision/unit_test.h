@@ -315,10 +315,3 @@ void r_division_quality_test() {
 	r_division_of_grid(g, 100, 70);
 	r_division_of_grid(g, 100, 100);
 }
-void print_separator(std::vector<int> &vec) {
-	cout << "Separator size" << vec.size() << endl;
-	for (int i = 0; i < vec.size(); i++) {
-		cout << vec[i] << "\t" << endl;
-	}
-	cout << endl;
-}

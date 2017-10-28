@@ -234,17 +234,19 @@ std::vector<std::vector<int>> planargraph::get_embedding() {
 }
 
 void planargraph::write_to_file(std::ofstream &out_stream) {
+	if (n == 1) {
+		out_stream << vertices[0].id << ":";
+		out_stream << std::endl;
+		return;
+	}
 	for (int i = 0; i < n; i++) {
-//		printf("%d:\t", i);
 		arc *arc_it = vertices[i].arclist.front();
 		out_stream << vertices[i].id << ":";
 		while (arc_it->mark != true) {
-//			printf("%d\t", arc_it->sink->index);
 			out_stream << " " << arc_it->sink->id;
 			arc_it->mark = true;
 			arc_it = arc_it->nextarc;
 		}
-		//printf("\n");
 		out_stream << std::endl;
 	}
 	for (int i = 0; i < m; i++) {
@@ -333,6 +335,10 @@ void graph::print() {
 
 void planargraph::check_rotational_system() {
 	printf("\nChecking the rotational system\n");
+	if (n == 1) {
+		printf("The graph is singleton\n");
+		return;
+	}
 	printf("Forward check\n");
 	for (int i = 0; i < n; i++) {
 		printf("%d:\t", i);
