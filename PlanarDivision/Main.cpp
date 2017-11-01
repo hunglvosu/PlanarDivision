@@ -13,18 +13,26 @@
 #include "r_divisor.h"
 #include "unit_test.h"
 #include "utils.h"
+#include "FVS_kernel.h"
+
+
+
+
 
 int main(int argc, char *argv[]) {
+//	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(10);
+//	planargraph g(10 * 10, embedding);
 	std::vector<std::vector<int>> embedding_storage;
 	read_embedding_from_file(argv[1], embedding_storage);
-	int r = std::stoi(argv[3]);
+	int r = std::stoi(argv[2]);
 	planargraph g(embedding_storage.size(), embedding_storage);
-	std::vector<int> boundary_vertices;
-	std::list<planargraph> small_graph_lists;
-	r_division(g, r, boundary_vertices, small_graph_lists);
-	write_output(boundary_vertices, small_graph_lists, argv[2]);
+	kdiv div;
+	r_division(g, r, div);
+	for (auto kg : div.graphs) {
+		print_k_graph(kg);
+	}
 //	benchmarking();
-//	getchar();
+	getchar();
 	return 0;
 }
 

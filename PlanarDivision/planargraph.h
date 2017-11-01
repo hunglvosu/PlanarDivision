@@ -118,7 +118,7 @@ planargraph::planargraph(int nv, std::vector<std::vector<int>> & embedding) {
 	}
 	// read the embedding
 	for (std::vector<std::vector<int>>::iterator it = embedding.begin(); it != embedding.end(); ++it) {
-		m += (*it).size();
+		m += (int)(*it).size();
 	}
 	arcs = new arc[6*n];
 	max_num_arcs = 6 * n;
@@ -181,7 +181,7 @@ void planargraph::reset() {
 		while (vertices[i].arclist.back()->version != 0) {
 			vertices[i].arclist.pop_back();
 		}
-		num_arcs += vertices[i].arclist.size();
+		num_arcs += (int)vertices[i].arclist.size();
 	}
 	m = num_arcs;
 	// no need to update rev

@@ -47,7 +47,7 @@ struct separation_edge_locator : dfs_visitor {
 
 	void finish_vertex(vertex *u) {
 		if (is_separator_found) return;
-		int degree_of_u = u->arclist.size();
+		int degree_of_u = (int)u->arclist.size();
 
 		if (degree_of_u <= 1) {
 			// v is the parent of u in the dfs tree

@@ -1,9 +1,15 @@
 #pragma once
 #include "planar_separator.h"
 #include "planar_triangulator.h"
+#include "fvs_kernel.h"
 
 typedef std::vector<vertex*> vertex_container;
 typedef std::vector<arc*> arc_container;
+
+typedef fvs_kernel::vertex kvertex;
+typedef fvs_kernel::edge kedge;
+typedef fvs_kernel::rDiv kdiv;
+typedef std::list<kvertex> kgraph;
 
 void create_subplanargraph(planargraph &g_subgraph, graph_components &g_components, int comp_id) {
 	for (int i = 0; i < g_subgraph.n; i++) {
@@ -196,4 +202,49 @@ void r_division(planargraph &g, int r) {
 	std::vector<int> boundary_vertices;
 	std::list<planargraph> small_graph_lists;
 	r_division(g, r, boundary_vertices, small_graph_lists);
+}
+
+void print_k_graph(kgraph &kg) {
+	std::cout << "*******************************************" << std::endl;
+	std::cout << "KERNEL GRAPH" << std::endl;
+	std::cout << "******************************************" << std::endl;
+	for (auto &v : kg) {
+		std::cout << v.id << ":";
+		for (auto &e : v.edges) {
+			std::cout << "\t" << (e.endpts.second == v.id ? e.endpts.first : e.endpts.second);
+		}
+		std::cout << std::endl;
+	}
+	std::cout << "******************************************" << std::endl;
+}
+
+void to_FSV_kernel_graph(kgraph  &fvs_kernel_graph, planargraph &g) {
+	for (int i = 0; i < g.n; i++) {
+		std::list<kedge> edge_list;
+		for (std::vector<arc*>::iterator arc_it = g.vertices[i].arclist.begin(); arc_it != g.vertices[i].arclist.end(); ++arc_it) {
+			edge_list.push_back(kedge(g.vertices[i].id, (*arc_it)->sink->id, 1));
+		}
+		fvs_kernel_graph.push_back(kvertex(g.vertices[i].id, edge_list));
+	}
+}
+
+void to_kernel_rDiv(kdiv &div, std::vector<int> &boundary_vertices, std::list<planargraph> &graphs) {
+	for (auto v : boundary_vertices) {
+		div.boundary.push_back(v);
+	}
+
+	for (std::list<planargraph>::iterator it = graphs.begin(); it != graphs.end(); it++) {
+		kgraph kg;
+		to_FSV_kernel_graph(kg, (*it));
+		div.graphs.push_back(kg);
+	}
+}
+
+
+// the output is rDiv structure in FVS_kernel namespace
+void r_division(planargraph &g, int r, kdiv &div) {
+	std::vector<int> boundary_vertices;
+	std::list<planargraph> small_graph_lists;
+	r_division(g, r, boundary_vertices, small_graph_lists);
+	to_kernel_rDiv(div, boundary_vertices, small_graph_lists);
 }

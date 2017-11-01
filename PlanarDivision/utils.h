@@ -1,5 +1,8 @@
 #pragma once
 #include "planargraph.h"
+#include "r_divisor.h"
+
+
 // the string split function is copied from https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
 void split(std::vector<std::string> & theStringVector,  /* Altered/returned value */
 	const  std::string  & theString,
@@ -94,4 +97,22 @@ void print_separator(std::vector<int> &vec) {
 		std::cout << vec[i] << "\t" << std::endl;
 	}
 	std::cout << std::endl;
+}
+
+
+/**********************************************************
+*****
+*****	GRAPH IO
+*****
+***********************************************************
+*/
+void write_division_from_input_embedding(int argc, char *argv[]) {
+	std::vector<std::vector<int>> embedding_storage;
+	read_embedding_from_file(argv[1], embedding_storage);
+	int r = std::stoi(argv[3]);
+	planargraph g(embedding_storage.size(), embedding_storage);
+	std::vector<int> boundary_vertices;
+	std::list<planargraph> small_graph_lists;
+	r_division(g, r, boundary_vertices, small_graph_lists);
+	write_output(boundary_vertices, small_graph_lists, argv[2]);
 }
