@@ -229,6 +229,7 @@ void subplanargraph_by_contracting_l0_and_removing_l2(planargraph &g, planargrap
 }
 void find_separator(planargraph &g, std::vector<int> &separator_container) {
 	bfs_tree primal_bfs_tree(&g, &g.vertices[0]);
+	primal_bfs_tree.print();
 	bfs(&g.vertices[0], g, primal_bfs_tree);
 	int sqrt_n = ((int)sqrt(g.n));
 	// Find a median level i such that L[0] + ... + L[i-1] <= n/2 and L[0]+...+ L[i] > n/2
