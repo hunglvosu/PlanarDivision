@@ -6,7 +6,7 @@
 #pragma once
 
 #include "targetver.h"
-#include <tchar.h>
+//#include <tchar.h>
 #include <time.h>
 #include <string.h>
 #include <cstdlib>
@@ -27,5 +27,7 @@
 #include <string>
 #include <fstream>
 #include <ctime> // time_t
+
+typedef long long __int64;
 
 // TODO: reference additional headers your program requires here

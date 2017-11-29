@@ -1,7 +1,7 @@
 #pragma once
 #include "planar_separator.h"
 #include "planar_triangulator.h"
-#include "fvs_kernel.h"
+#include "FVS_kernel.h"
 
 typedef std::vector<vertex*> vertex_container;
 typedef std::vector<arc*> arc_container;
@@ -141,10 +141,13 @@ void r_division(planargraph &g, int r, std::vector<int> &boundary_vertices, std:
 	int sep_count = 0;
 
 	std::vector<int> separator_container;
-	find_separator(g,separator_container);
+
+	/*find_separator(g,separator_container);
 	boundary_vertices.insert(boundary_vertices.end(), separator_container.begin(), separator_container.end());
-	sep_count++;
+	sep_count++;*/
+
 	// find subgraphs of g after removing the separator
+	std::cout << "Find connected components of the input graph" << std::endl;
 	graph_components g_components;
 	g_components.init(&g);
 	separtor_bfs(g, g_components, separator_container);
