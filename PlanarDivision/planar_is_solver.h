@@ -31,8 +31,7 @@ struct planar_is_solver {
 			return;
 		}
 		std::stack<int> to_be_deactivated;
-		std::stack<vertex*> deg_1_vertices;
-		std::stack<vertex*> deg_2_vertices;
+		std::stack<vertex *> deg_atmost_2_vertices;
 		int deg_min_vertex;
 		int deg_min = g->n;
 		int deg_max_vertex;
@@ -40,125 +39,94 @@ struct planar_is_solver {
 		int deg_v;
 		// we keep track of deactivate edges during branching
 		std::stack<arc*> edge_stack;
+
 		for (int v = 0; v < g->n; v++) {
-			if (degs[v] < 0) continue;
-			deg_v = degs[v];
-			if (deg_v == 0) {
-				to_be_deactivated.push(v);
+			if (degs[v] >= 0 && degs[v] <= 2) {
+				deg_atmost_2_vertices.push(&g->vertices[v]);
+			}
+		}
+		vertex *v, *u, *w;
+		int v_index, u_index, w_index;
+		while (!deg_atmost_2_vertices.empty()) {
+			v = deg_atmost_2_vertices.top();
+			deg_atmost_2_vertices.pop();
+			v_index = v->index;
+			if (degs[v_index] < 0) continue;	// v is deactivated
+			if (degs[v_index] == 0) {
+				deactivate_vertex(v_index, edge_stack);
 				solution_size++;
 			}
-			else if (deg_v <= 1) {
-				deg_1_vertices.push(&g->vertices[v]);
+			else if(degs[v_index] == 1){
 				solution_size++;
-			}
-			else if (deg_v == 2) {
-				deg_2_vertices.push(&g->vertices[v]);
-				arc *uv = sample_active_arcs[v]->rev;
-				arc *wv = sample_active_arcs[v]->nextarc->rev;
-				int u = uv->source->index;
-				int w = wv->source->index;
-				// contract v and w to u
-				deactivate_vertex(v, edge_stack);
-				if (degs[w] == 0) {
-					deactivate_vertex(w, edge_stack);
-					
+				arc *vu = sample_active_arcs[v->index];
+				// since v is in the solution, u will be removed from the graph
+				// iterate over neighbors of u
+				// detect whether the removal of u will result in deg-at-most-2 vertices or not
+				arc *ait = vu->rev->nextarc;
+				int vit_index = ait->sink->index;
+				while (vit_index != v_index) {
+					if (degs[vit_index] <= 3) {			// vit has deg at most 2 after removing u
+						deg_atmost_2_vertices.push(ait->sink);
+					}
+					ait = ait->nextarc;
+					vit_index = ait->sink->index;
 				}
-				else if (degs[u] == 0) {
-					deactivate_vertex(u, edge_stack);
+				deactivate_vertex(v_index, edge_stack);
+				deactivate_vertex(vu->sink->index, edge_stack);
+			}
+			else {	// v has degree 2
+				arc *uv = sample_active_arcs[v_index]->rev;
+				arc *wv = sample_active_arcs[v_index]->nextarc->rev;
+				u = uv->source;
+				w = wv->source;
+				u_index = u->index;
+				w_index = w->index;
+				//iterate over neighbors of w
+				// deactivate edges of w that share neighbors with N[u]
+				arc *ait = wv->nextarc;
+				int vit_index = ait->sink->index;
+				while (vit_index != v_index) {
+					if (vit_index == u_index) {
+						deactivate_edge(ait);
+						edge_stack.push(ait);
+					}
+					else if (g->edge_exists(u, ait->sink)) {
+						deactivate_edge(ait);
+						edge_stack.push(ait);
+						if (degs[vit_index] <= 3) {	// vit has degree 2 after the removal of the edge (w-vit)
+							deg_atmost_2_vertices.push(ait->sink);
+						}
+					}
+					ait = ait->nextarc;
+					vit_index = ait->sink->index;
+				}
+				if (degs[w_index] == 1) {	
+					// w has v as the only neighbor left
+					deactivate_vertex(w_index, edge_stack);			
+				}
+				else if (degs[u_index] == 1) { 
+					// u has v as the only neighbor left
+					deactivate_vertex(u_index, edge_stack);
 				}
 				else {
-					// TO-DO need to recursively process v after contraction
-					// contract w to u means change the name of w to the name of u
-					// only the rotational systems of w and u changed. 
-					g->vertices[w].name = g->vertices[v].name;
-					//degs[w] = -1; 
-					// deactivate arcs of w that connect the same neighbors with u
-					arc *ait = wv->nextarc;
-					arc *wa = nullptr;
-					while (ait->sink->index != v) {
-						if (g->arc_map.find(g->arc_to_int64(uv->source, ait->sink)) != g->arc_map.end()) {
-							deactivate_edge(ait);
-							edge_stack.push(ait);
-						}
-						else if (wa == nullptr) {
-							wa = ait;
-						}
-					}
-					if (degs[w] == 0) {
-						uv->prevarc->nextarc = uv->nextarc;
-						uv->nextarc->prevarc = uv->prevarc;
-					}
-					else {
-						arc *ux = uv->prevarc;
-						arc *uy = uv->nextarc;
-						arc *wb = wa->prevarc;
-						ux->nextarc = wa;
-						wa->prevarc = ux;
-						uy->prevarc = wb;
-						wb->nextarc = uy;
-					}
-					// mark w deactivated 
-					// note that arcs of w may not be deactivated
-					degs[w] = -1;
+					// contract v and w to u
+					arc *ux = uv->prevarc;
+					arc *uy = uv->nextarc;
+					arc *wa = wv->nextarc;
+					arc *wb = wv->prevarc;
+					ux->nextarc = wa;
+					wa->prevarc = ux;
+					uy->prevarc = wb;
+					wb->nextarc = uy;
+					sample_active_arcs[u_index] = ux;
+					degs[u_index] = degs[u_index] + degs[w_index] - 2;
+					if (degs[u_index] == 2) deg_atmost_2_vertices.push(u);
+					w->name = u_index;
+					degs[w_index] = degs[u_index];
 				}
+				deactivate_vertex(v_index, edge_stack);
 			}
 		}
-		vertex *v;
-		int v_index;
-		// process degree 1 vertices
-		while (!deg_1_vertices.empty())
-		{
-			v = deg_1_vertices.top();
-			deg_1_vertices.pop();
-			v_index = v->index;
-			if (degs[v_index] == -1) continue;// v is deactivated
-			to_be_deactivated.push(v_index);
-			arc *vu = sample_active_arcs[v->index];
-			
-			// since v is in the solution, u will be removed from the graph
-			// iterate over neighbors of u
-			// detect whether the removal of u will result in deg-at-most-2 vertices or not
-			arc *ait = vu->rev->nextarc;
-			int vit_index = ait->sink->index;
-			while (vit_index != v_index) {
-				if (degs[vit_index] == 1) {			// vit has deg 0 after removing u
-					to_be_deactivated.push(vit_index);
-					solution_size++;
-				}
-				else if (degs[vit_index] == 2) {	// vit has deg 1 after removing u
-					deg_1_vertices.push(ait->sink);
-				}
-				else if (degs[vit_index] == 3) {	// vit has deg 2 after remvoing u
-					deg_2_vertices.push(ait->sink);
-				}
-				ait = ait->nextarc;
-			}
-		}
-		while (!to_be_deactivated.empty()) {
-			deactivate_vertex(to_be_deactivated.top(), edge_stack);
-			to_be_deactivated.pop();
-		}
-		vertex *u, *w;
-		int u_index, w_index;
-		// process degree 2 vertices
-		while (!deg_2_vertices.empty()) {
-			v = deg_2_vertices.top();
-			deg_2_vertices.pop();
-			v_index = v->index;
-			if (degs[v_index] == -1) continue;// v is deactivated
-			arc *uv = sample_active_arcs[v_index]->rev;
-			arc *wv = sample_active_arcs[v_index]->nextarc->rev;
-			u = uv->source;
-			u_index = u->index;
-			w = wv->source;
-			w_index = w->index;
-			to_be_deactivated.push(v_index);
-			solution_size++;
-
-		}
-
-
-
 		print();
 	}
 

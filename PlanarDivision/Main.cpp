@@ -22,11 +22,11 @@
 int main(int argc, char *argv[]) {
 //	vector<vector<int>> embedding = create_sample_grid_nxn_embedding(10);
 //	planargraph g(5 * 5, embedding);
-	//vector<vector<int>> embedding = create_sample_star_1xn_embedding(4);
-	//planargraph g(4, embedding);
+	vector<vector<int>> embedding = create_sample_star_1xn_embedding(4);
+	planargraph g(4, embedding);
 //	g.print();
-	//planar_is_solver solver(&g);
-	//solver.find_independent_set();
+	planar_is_solver solver(&g);
+	solver.find_independent_set();
 	//write_division_from_input_embedding(argc, argv);
 /*	std::vector<std::vector<int>> embedding_storage;
 	read_embedding_from_file(argv[1], embedding_storage);
