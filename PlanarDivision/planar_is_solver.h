@@ -30,7 +30,9 @@ struct planar_is_solver {
 			std::cout << "Finish " << branch_count << "-th branch" << std::endl;
 			return;
 		}
-		std::vector<int> deg_2_vertices;
+		std::stack<int> to_be_deactivated;
+		std::stack<vertex*> deg_1_vertices;
+		std::stack<vertex*> deg_2_vertices;
 		int deg_min_vertex;
 		int deg_min = g->n;
 		int deg_max_vertex;
@@ -41,13 +43,16 @@ struct planar_is_solver {
 		for (int v = 0; v < g->n; v++) {
 			if (degs[v] < 0) continue;
 			deg_v = degs[v];
-			if (deg_v <= 1) {
-				// TO-DO case deg_v = 1 is different from case deg_v = 0
-				deactivate_vertex(v, edge_stack);
+			if (deg_v == 0) {
+				to_be_deactivated.push(v);
+				solution_size++;
+			}
+			else if (deg_v <= 1) {
+				deg_1_vertices.push(&g->vertices[v]);
 				solution_size++;
 			}
 			else if (deg_v == 2) {
-				deg_2_vertices.push_back(v);
+				deg_2_vertices.push(&g->vertices[v]);
 				arc *uv = sample_active_arcs[v]->rev;
 				arc *wv = sample_active_arcs[v]->nextarc->rev;
 				int u = uv->source->index;
@@ -56,6 +61,7 @@ struct planar_is_solver {
 				deactivate_vertex(v, edge_stack);
 				if (degs[w] == 0) {
 					deactivate_vertex(w, edge_stack);
+					
 				}
 				else if (degs[u] == 0) {
 					deactivate_vertex(u, edge_stack);
@@ -96,6 +102,59 @@ struct planar_is_solver {
 					degs[w] = -1;
 				}
 			}
+		}
+		vertex *v;
+		int v_index;
+		// process degree 1 vertices
+		while (!deg_1_vertices.empty())
+		{
+			v = deg_1_vertices.top();
+			deg_1_vertices.pop();
+			v_index = v->index;
+			if (degs[v_index] == -1) continue;// v is deactivated
+			to_be_deactivated.push(v_index);
+			arc *vu = sample_active_arcs[v->index];
+			
+			// since v is in the solution, u will be removed from the graph
+			// iterate over neighbors of u
+			// detect whether the removal of u will result in deg-at-most-2 vertices or not
+			arc *ait = vu->rev->nextarc;
+			int vit_index = ait->sink->index;
+			while (vit_index != v_index) {
+				if (degs[vit_index] == 1) {			// vit has deg 0 after removing u
+					to_be_deactivated.push(vit_index);
+					solution_size++;
+				}
+				else if (degs[vit_index] == 2) {	// vit has deg 1 after removing u
+					deg_1_vertices.push(ait->sink);
+				}
+				else if (degs[vit_index] == 3) {	// vit has deg 2 after remvoing u
+					deg_2_vertices.push(ait->sink);
+				}
+				ait = ait->nextarc;
+			}
+		}
+		while (!to_be_deactivated.empty()) {
+			deactivate_vertex(to_be_deactivated.top(), edge_stack);
+			to_be_deactivated.pop();
+		}
+		vertex *u, *w;
+		int u_index, w_index;
+		// process degree 2 vertices
+		while (!deg_2_vertices.empty()) {
+			v = deg_2_vertices.top();
+			deg_2_vertices.pop();
+			v_index = v->index;
+			if (degs[v_index] == -1) continue;// v is deactivated
+			arc *uv = sample_active_arcs[v_index]->rev;
+			arc *wv = sample_active_arcs[v_index]->nextarc->rev;
+			u = uv->source;
+			u_index = u->index;
+			w = wv->source;
+			w_index = w->index;
+			to_be_deactivated.push(v_index);
+			solution_size++;
+
 		}
 
 
