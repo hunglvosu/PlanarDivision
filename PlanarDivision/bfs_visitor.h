@@ -14,7 +14,7 @@ struct bfs_visitor {
 	virtual void black_sink(arc *uv) {};
 	virtual void finish_vertex(vertex *u) {};
 };
-struct separator_bfs_visitor {
+struct vertex_excluding_bfs_visitor {
 	virtual void new_component(vertex *u) {};	// start visit a new component
 	virtual void discover_vertex(vertex *u) {};
 	virtual void examine_vertex(vertex *u) {};
@@ -74,22 +74,21 @@ void bfs(vertex *source, graph &g, bfs_visitor &vis) {
 	delete[] color;
 }
 
-// bfs the graph g asssumed that vertices in the separator are removed
-// use this bfs to count the number of components and its statistics after removing the separator
-// and to find induced subgraphs of the components
-void separtor_bfs(graph &g, separator_bfs_visitor &vis, std::vector<int> &separator){
+// apply bfs to a graph when a specified vertex set S is assumed to be removed from the graph
+// useful to find connected components when S = emptyset
+void vertex_ecluding_bfs(graph &g, vertex_excluding_bfs_visitor &vis, std::vector<int> &S){
 	int *color = new int[g.n];
-	bool *sep_marker = new bool[g.n];
+	bool *S_marker = new bool[g.n];	// mark vertices in S
 	for (int i = 0; i < g.n; i++) {
 		color[i] = g.white;
-		sep_marker[i] = false;
+		S_marker[i] = false;
 	}
-	for (int i = 0; i < separator.size(); i++) {
-		sep_marker[separator[i]] = true;
+	for (int i = 0; i < S.size(); i++) {
+		S_marker[S[i]] = true;
 	}
 	vertex *source = nullptr;
 	for (int i = 0; i < g.n; i++) {
-		if (color[i] == g.white && (!sep_marker[i])) {
+		if (color[i] == g.white && (!S_marker[i])) {
 			source = &g.vertices[i];
 			vis.new_component(source);
 			std::queue<vertex*> vqueue;
@@ -108,7 +107,7 @@ void separtor_bfs(graph &g, separator_bfs_visitor &vis, std::vector<int> &separa
 				for (std::vector<arc*>::iterator it = g.vertices[u->index].arclist.begin(); it != g.vertices[u->index].arclist.end(); ++it) {
 					uv = *it;
 					v = uv->sink;
-					if (sep_marker[v->index]) continue;
+					if (S_marker[v->index]) continue;
 					vis.examine_arc(uv);
 					if (color[v->index] == g.white) {
 						vis.discover_vertex(v);
@@ -134,5 +133,5 @@ void separtor_bfs(graph &g, separator_bfs_visitor &vis, std::vector<int> &separa
 	}// end for
 	vis.finish_traversal();
 	delete[] color;
-	delete[] sep_marker;
+	delete[] S_marker;
 }

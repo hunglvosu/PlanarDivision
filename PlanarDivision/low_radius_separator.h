@@ -69,8 +69,9 @@ struct separation_edge_locator : dfs_visitor {
 			int y_index = (*v_cycle_ptr).back();
 			(*v_cycle_ptr).remove_back();
 
-			// note here that primal_vu_arc->sink = x = (*v_cycle_ptr).front()
-			//				  primal_vu_arc->source = y = (*v_cycle_ptr).back()
+			// note here that 
+			// primal_vu_arc->sink = x = (*v_cycle_ptr).front()
+			// primal_vu_arc->source = y = (*v_cycle_ptr).back()
 			arc *xz = primal_vu_arc->rev->nextarc;
 			vertex *z = xz->sink;
 

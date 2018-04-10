@@ -38,7 +38,7 @@ void planar_face_traversal(planargraph *g, face_traversal_visitor &visitor) {
 			visitor.next_vertex(sink);
 			// update current arc
 			arc_marker[current_arc_index] = true;
-			if(current_arc->rev->prevarc->version <= g->current_version){	// if the arc to be visited is not a new arc, i.e, arc added during traversal
+			if(current_arc->rev->prevarc->version <= g->current_version){	// if the arc to be visited is not a new arc, i.e, arc added during traversal by say, triangulation
 				current_arc = current_arc->rev->prevarc;
 				current_arc_index = current_arc->index;
 			}

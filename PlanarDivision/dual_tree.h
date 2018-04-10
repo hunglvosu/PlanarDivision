@@ -89,7 +89,7 @@ struct dual_tree_builder : face_traversal_visitor {
 		for (int i = 0; i < m; i++) arc_marker[i] = false;
 		for (int i = 0; i < m; i++) {
 			if ((!primal_tree_arc_marker[primal_arcs[i].index]) && (!primal_tree_arc_marker[primal_arcs[i].rev->index]) && (arc_marker[i])) {
-				
+				// primal arc i and its reverse are not tree arcs
 				dual_u_index = dtree->arc_index_to_dual_vertex_index[primal_arcs[i].index];
 				dual_v_index = dtree->arc_index_to_dual_vertex_index[primal_arcs[i].rev->index];
 				// add u->v arc and v->u arc to the dual tree

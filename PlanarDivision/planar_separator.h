@@ -1,101 +1,12 @@
 #pragma once
 #include "low_radius_separator.h"
 #include "planar_triangulator.h"
+#include "graph_utils.h"
 
 typedef std::vector<vertex*> vertex_container;
 typedef std::vector<arc*> arc_container;
 
-struct graph_components : separator_bfs_visitor {
-	planargraph *g;
-	int num_components;
-	std::vector<vertex_container> vertices_of_components;
-	std::vector<arc_container> arcs_of_components;
-	vertex_container sources_of_components;
-	// the current component source vertex
-	vertex *current_source;
-	int current_comp_index = -1;
-	int *vertex_to_comp_id;
 
-	graph_components(planargraph *arg_g) {
-		init(arg_g);
-	}
-	graph_components() {
-		vertex_to_comp_id = nullptr;
-		num_components = 0;
-	}
-	~graph_components() {
-		//printf("destruct graph component\n");
-		delete[] vertex_to_comp_id;
-		}
-
-	void init(planargraph *arg_g) {
-		g = arg_g;
-		vertex_to_comp_id = new int[g->n];
-		for (int i = 0; i < g->n; i++) {
-			vertex_to_comp_id[i] = -1;
-		}
-		num_components = 0;
-	}
-	void new_component(vertex *u) {
-		//printf("new component start at %d\n", u->index);
-		current_source = u;
-		current_comp_index++;
-		sources_of_components.push_back(u);
-		vertex_to_comp_id[u->index] = current_comp_index;
-	}
-	// the design of separator_bfs_visitor gurantee that both u and v are not in the separator
-	void tree_arc(arc *uv) {
-		vertex *u = uv->source;
-		vertex *v = uv->sink;
-		vertex_to_comp_id[v->index] = vertex_to_comp_id[u->index];
-	}
-
-	void finish_traversal() {
-		num_components = current_comp_index + 1;
-		//printf("#components = %d\n", num_components);
-		for (int i = 0; i < num_components; i++) {
-			vertices_of_components.push_back(vertex_container());
-			arcs_of_components.push_back(arc_container());
-		}
-		int comp_id = -1;
-		for (int i = 0; i < g->n; i++) {
-			comp_id = vertex_to_comp_id[i];
-			if (comp_id >= 0) {
-				vertices_of_components[comp_id].push_back(&g->vertices[i]);
-			}
-		}
-		int source_comp_id = -1;
-		int sink_comp_id = -1;
-		for (int i = 0; i < g->m; i++) {
-			source_comp_id = vertex_to_comp_id[g->arcs[i].source->index];
-			sink_comp_id = vertex_to_comp_id[g->arcs[i].sink->index];
-			if (source_comp_id >= 0 && sink_comp_id >= 0) {
-				arcs_of_components[source_comp_id].push_back(&g->arcs[i]);
-			}
-		}
-		/*		for (int i = 0; i < num_components; i++) {
-		printf("vertices of comp# %d\n", i);
-		for (int j = 0; j < vertices_of_components[i].size(); j++) {
-		printf("%d\t", vertices_of_components[i][j]->index);
-		}
-		printf("\n");
-		printf("arcs of comp# %d\n", i);
-		for (int j = 0; j < arcs_of_components[i].size(); j++) {
-		printf("%d->%d\t",arcs_of_components [i][j]->source->index, arcs_of_components[i][j]->sink->index);
-		}
-		printf("\n");
-		}*/
-	};
-
-	void discover_vertex(vertex *u) {}
-	void examine_vertex(vertex *u) {}
-	void non_tree_arc(arc *uv) {}
-	void gray_sink(arc *uv) {}
-	void black_sink(arc *uv) {}
-	void finish_vertex(vertex *u) {}
-	void finish_component(vertex *u) {}
-
-};
 
 
 void subplanargraph_by_contracting_l0_and_removing_l2(planargraph &g, planargraph &g_subgraph, int *levels, int l0, int l2) {
@@ -229,7 +140,7 @@ void subplanargraph_by_contracting_l0_and_removing_l2(planargraph &g, planargrap
 }
 void find_separator(planargraph &g, std::vector<int> &separator_container) {
 	bfs_tree primal_bfs_tree(&g, &g.vertices[0]);
-	primal_bfs_tree.print();
+	//primal_bfs_tree.print();
 	bfs(&g.vertices[0], g, primal_bfs_tree);
 	int sqrt_n = ((int)sqrt(g.n));
 	// Find a median level i such that L[0] + ... + L[i-1] <= n/2 and L[0]+...+ L[i] > n/2
@@ -318,6 +229,7 @@ void find_separator(planargraph &g, std::vector<int> &separator_container) {
 	subplanargraph_by_contracting_l0_and_removing_l2(g, contracted_graph, primal_bfs_tree.levels, l0, l2);
 	planar_triangulate(&contracted_graph);
 	std::vector<int> middle_separator;
+	std::cout << "Find low-radius-separator of contracted graph" << std::endl;
 	find_low_radius_separator(&contracted_graph, &contracted_graph.vertices[contracted_graph.n-1], middle_separator);
 	int vertex_id = -1;
 	for (int i = 0; i < middle_separator.size(); i++) {

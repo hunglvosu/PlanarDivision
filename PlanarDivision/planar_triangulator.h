@@ -1,6 +1,7 @@
 #pragma once
 #include "planargraph.h"
 #include "planar_face_visitor.h"
+#include "graph_utils.h"
 
 struct  triangulator : face_traversal_visitor
 {
@@ -77,8 +78,10 @@ struct  triangulator : face_traversal_visitor
 		arc *uv, *vu, *uy, *yv, *vx, *xu;
 		vertex *x, *y;
 		// recall for each new arc uv and vu are located consecutively on the array
+		__int64 arc_code = 0;
 		for (int i = g->m; i < num_arcs_store_in_g ; i++) {
-			if (g->arc_map.find(g->arc_to_int64(g->arcs[i].source, g->arcs[i].sink))  != g->arc_map.end()) {
+			arc_code = g->arc_to_int64(g->arcs[i].source, g->arcs[i].sink);
+			if (g->arc_map.find(arc_code)  != g->arc_map.end()) {
 				uv = &g->arcs[i];
 				vu = uv->rev;
 				vx = uv->rev->prevarc;
@@ -109,14 +112,15 @@ struct  triangulator : face_traversal_visitor
 				uv->nextarc = vx->rev;
 				vx->rev->prevarc = uv;
 			}
-			g->arc_map.insert(arc_map_type::value_type(g->arc_to_int64(g->arcs[i].source, g->arcs[i].sink), i));
+			g->arc_map.insert(arc_map_type::value_type(arc_code, i));
 			g->arcs[i].source->arclist.push_back(&g->arcs[i]);
 		}
 		// update the neighbor list of new added arcs;
 		
 		g->m = num_arcs_store_in_g;
 		g->num_version++;
-		g->current_version++;		// update the graph version			
+		g->current_version++;		// update the graph version		
+		
 	}
 
 };
